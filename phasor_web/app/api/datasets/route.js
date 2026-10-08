@@ -3,22 +3,8 @@ import fs from "fs";
 import path from "path";
 import { APP_ROOT, OUTPUT_ROOT } from "@/lib/paths";
 
-function paperRoot() {
-  if (process.env.PHASOR_PAPER_DATA) return process.env.PHASOR_PAPER_DATA;
-  const candidates = [
-    path.resolve(APP_ROOT, "../../PHASOR_paper_data"),
-    path.resolve(APP_ROOT, "../PHASOR_paper_data"),
-    path.resolve(APP_ROOT, "PHASOR_paper_data"),
-  ];
-  return candidates.find((item) => fs.existsSync(item)) || "";
-}
-
 function resolvePath(value, base) {
   if (!value) return "";
-  if (value.startsWith("paper/")) {
-    const root = paperRoot();
-    return root ? path.join(root, value.slice("paper/".length)) : "";
-  }
   return path.isAbsolute(value) ? value : path.join(base, value);
 }
 
