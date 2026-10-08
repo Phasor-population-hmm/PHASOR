@@ -1,25 +1,27 @@
 # PHASOR
 
-PHASOR is the program for the retinal recordings in this paper. It runs on your computer. Nothing is uploaded.
+Population HMM Analysis of Stimulus-locked Output in the Retina.
 
-The paper data is a separate ZIP. Open `index.html` in that folder to look at the finished figures. Use this repository when you want to run the analysis.
+PHASOR is a local application for analysis of multielectrode array recordings of retinal ganglion cell activity. It performs stimulus alignment, contrast filtering, clustering, cell-type classification, hidden Markov model fitting, Viterbi decoding, and post-HMM reporting. All computation is executed on the local machine.
 
-## What you need
+## Requirements
 
-Python 3.10 or newer, and Node.js 20 or newer.
+- Python 3.10 or newer
+- Node.js 20 or newer
+- Three CPU cores during hidden Markov model fitting
 
-The hidden Markov model uses 3 cores. Leave the computer on while that fit is running. Only one fit or analysis runs at a time.
+One pipeline job or model fit may run at a time.
 
-## 1. Clone the repository
+## Installation
+
+Clone the repository:
 
 ```bash
 git clone https://github.com/Phasor-population-hmm/PHASOR.git
 cd PHASOR
 ```
 
-## 2. Install Python
-
-On Linux or Mac:
+Create the Python environment and install the analysis dependencies. On Linux or macOS:
 
 ```bash
 python3 -m venv .venv
@@ -27,9 +29,9 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-On Windows, activate the environment with `.venv\Scripts\activate` instead of `source .venv/bin/activate`. Then run the same `pip install` line.
+On Windows, activate the environment with `.venv\Scripts\activate`, then run `pip install -r requirements.txt`.
 
-## 3. Install and start the website
+Install and start the web application:
 
 ```bash
 cd phasor_web
@@ -37,24 +39,25 @@ npm install
 npm run dev
 ```
 
-If `npm install` stops with a symlink error, run `npm install --no-bin-links` and then `npm run dev`.
+The application is served at http://127.0.0.1:3000. The terminal session must remain active while the interface is in use. A hidden Markov model fit that has already started continues if the browser is closed.
 
-Open http://127.0.0.1:3000 in a browser.
+On a file system that does not permit symbolic links, install the Node dependencies with:
 
-Leave that terminal open. Closing it stops the website. A hidden Markov model that has already started keeps running.
+```bash
+npm install --no-bin-links
+npm run dev
+```
 
-## 4. Use the paper data
+## Data directory
 
-Unzip the paper data so the two folders sit next to each other:
+Recordings distributed with the paper are provided separately from this repository. Place that directory beside the cloned repository and retain the directory name `PHASOR_paper_data`:
 
 ```text
 PHASOR/
 PHASOR_paper_data/
 ```
 
-`PHASOR` is this repository. `PHASOR_paper_data` is the unzipped paper folder. The folder name has to stay `PHASOR_paper_data`.
-
-On this layout the website finds the recordings by itself. If the paper folder is somewhere else, set the path before you start the website:
+If the data directory is stored elsewhere, set its absolute path before starting the application:
 
 ```bash
 export PHASOR_PAPER_DATA=/path/to/PHASOR_paper_data
@@ -69,42 +72,36 @@ $env:PHASOR_PAPER_DATA="C:\path\to\PHASOR_paper_data"
 npm run dev
 ```
 
-Choose a recording in the bar at the top. PHASOR fills in the matching files from that recording. Choose Other files when you want a different dataset. That clears the filled-in paths so you can browse to your own files.
+After the data directory is resolved, the recording selector loads the `.h5` file, spike table, synctone table, stimulus file, and HMM bundle for the selected recording. The Other files option clears those assignments and accepts a user-specified dataset.
 
-## 5. What the pages do
+This repository includes the spike tables, stimulus files, and synctone tables used to initiate a run. The large `.h5` recordings and fitted HMM bundles are supplied in the data directory.
 
-Overview tells you what the steps are.
+## Analysis interface
 
-Pipeline runs the steps in order.
+Overview summarizes the analysis sequence.
 
-Pre-processing reads the recording and writes the spike array, the statistics, and the rasters.
+Pipeline executes the stages in order. Pre-processing writes the spike array, summary statistics, and raster plots. Processing filters each contrast, clusters units, and writes label-index maps. Fourier classification and sustained/transient classification are then run on the filtered data. Each stage writes into `phasor_output/runs/<recording>/`.
 
-Processing filters the recording by contrast, clusters the cells, and writes the label index maps.
+Hidden Markov Model loads an existing bundle when one is present for the selected recording. A new fit is started from that page and runs as a local terminal process. The fit requires three CPU cores. Leaving the page does not interrupt it. Terminate stops the active fit. Completion is reported in a dialog, which is dismissed from its close control.
 
-Fourier classification and sustained or transient classification use the filtered data.
+Post-HMM plots runs one analysis at a time. Each analysis is written directly into its own directory under the recording output folder. The analyses are firing rate, Subtypes MEA Spread, subtype maps, sustained/transient polar plots, polar plots by repetition and cycle, polar activity, dominant modes, mode summary plots, and interactive HMM Viterbi decoding.
 
-Hidden Markov Model uses the saved result when the paper data already has one. To fit a new model, press start. The fit runs in a terminal on this computer and needs 3 cores. You can leave the page. The bar at the bottom shows that it is still running. Terminate stops it. When it finishes, a box names the job. Close that box with the X in the corner.
-
-Post-HMM plots runs one analysis at a time. Press the analysis. It shows that it is running. The figures go into one folder for that analysis.
-
-Each recording gets one output folder. The path shown on screen is `phasor_output/runs/...`. The files are on your computer, under the PHASOR folder, unless you set another output folder:
+Displayed output paths use the form `phasor_output/runs/...`. To write results elsewhere, set `PHASOR_OUTPUT_ROOT` before starting the application:
 
 ```bash
 export PHASOR_OUTPUT_ROOT=/path/to/output
 ```
 
-Set that in the same terminal, before `npm run dev`.
+## HMM configuration
 
-## HMM settings
+HMM settings are stored in `phasor_web/hmm.config.json`.
 
-`phasor_web/hmm.config.json` points at the HMM code in `mode_project`. Leave `python` empty to use the Python environment from step 2. `max_parallel_searches` is 3. That is the core limit.
+`project_dir` is the path to the HMM engine. The default is `mode_project`.
 
-## What is not in this repository
+`python` is the interpreter used for model fits. Leave it empty to use the virtual environment created above.
 
-The large recording files and the finished HMM bundles are in the paper data ZIP. This repository has the program, the spike tables, the stimulus files, and the synctone tables used to start a run.
-
-Results you create are written to `phasor_output/`. That folder is not part of the repository.
+`max_parallel_searches` is the number of concurrent covariance searches. The default is 3.
 
 ## License
 
-MIT. See LICENSE.
+Released under the MIT License. See `LICENSE`.

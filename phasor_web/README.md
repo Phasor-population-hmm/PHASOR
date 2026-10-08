@@ -1,14 +1,14 @@
-# PHASOR website
+# PHASOR web application
 
-The full install steps are in the README at the top of the repository.
+Installation and operation are documented in the repository README.
 
-From this folder, after Python is installed:
+From this directory, after the Python environment has been installed:
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open http://127.0.0.1:3000.
+The application is served at http://127.0.0.1:3000.
 
-If install fails on a symlink, use `npm install --no-bin-links`.
+On a file system that does not permit symbolic links, use `npm install --no-bin-links`.
