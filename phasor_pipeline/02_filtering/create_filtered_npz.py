@@ -8,6 +8,7 @@ python create_filtered_npz.py --contrast 0 --frequency 2 --output_dir Filtered_D
 """
 
 import os
+import sys
 import json
 import argparse
 import numpy as np
@@ -108,10 +109,58 @@ class FilteredNPZCreator:
 
     def __init__(self, data_dir: str, stims_json_path: str, output_dir: str):
         self.data_dir = data_dir
+        self.stims_json_path = stims_json_path
         self.output_dir = output_dir
         os.makedirs(output_dir, exist_ok=True)
 
         self.filter_processor = StimulusFilterProcessor(stims_json_path)
+
+    def write_contrast_folders(self, frequency: Optional[float] = None,
+                               stim_type: Optional[str] = "FFSine") -> List[str]:
+        """Write one folder per contrast. A missing contrast does not mix every condition together."""
+        df = self.filter_processor.stimulus_df
+        stim_mask = df["stimType"].str.lower() == str(stim_type).lower()
+        scoped = df.loc[stim_mask]
+        if scoped.empty:
+            raise ValueError(f"No {stim_type} stimuli found in {self.stims_json_path}")
+
+        if frequency is None:
+            present = sorted({float(v) for v in scoped["frequency"].dropna().tolist()})
+            frequencies = [2.0] if 2.0 in present else present
+        else:
+            frequencies = [float(frequency)]
+
+        written = []
+        single_frequency = len(frequencies) == 1
+        for freq in frequencies:
+            contrasts = sorted({
+                float(v) for v in scoped.loc[scoped["frequency"] == freq, "contrast"].dropna().tolist()
+            })
+            if not contrasts:
+                continue
+            for contrast in contrasts:
+                whole = float(contrast).is_integer()
+                contrast_label = f"c{int(contrast)}" if whole else f"c{contrast}"
+                freq_label = f"f{int(freq)}Hz" if float(freq).is_integer() else f"f{freq}Hz"
+                folder = contrast_label if single_frequency else f"{contrast_label}_{freq_label}"
+                sub_dir = os.path.join(self.output_dir, folder)
+                os.makedirs(sub_dir, exist_ok=True)
+                writer = FilteredNPZCreator(self.data_dir, self.stims_json_path, sub_dir)
+                writer.create_filtered_npz_files(
+                    contrast=contrast, frequency=freq, stim_type=stim_type
+                )
+                n_stim = len(writer.filter_processor.get_condition_indices(
+                    contrast=contrast, frequency=freq, stim_type=stim_type
+                ))
+                print(f"Wrote {folder} ({n_stim} stimuli) -> {sub_dir}")
+                written.append(sub_dir)
+        if not written:
+            raise ValueError("No stimuli matched the requested contrast and frequency")
+        for path in Path(self.output_dir).glob("*"):
+            if path.is_file() and ("cany" in path.name.lower() or "fany" in path.name.lower()):
+                path.unlink()
+                print(f"Removed combined file {path.name}")
+        return written
 
     def create_filtered_npz_files(self, contrast: Optional[float] = None,
                                 frequency: Optional[float] = None,
@@ -197,12 +246,16 @@ def main():
     creator = FilteredNPZCreator(args.data_dir, args.stims_json, args.output_dir)
 
     try:
-        creator.create_filtered_npz_files(
-            contrast=args.contrast, frequency=args.frequency, stim_type=args.stim_type
-        )
-
-    except Exception as e:
-        pass
+        if args.contrast is None:
+            creator.write_contrast_folders(frequency=args.frequency, stim_type=args.stim_type)
+        else:
+            creator.create_filtered_npz_files(
+                contrast=args.contrast, frequency=args.frequency, stim_type=args.stim_type
+            )
+            print(f"Wrote filtered array to {args.output_dir}")
+    except Exception as exc:
+        print(f"Filter failed: {exc}", file=sys.stderr)
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":

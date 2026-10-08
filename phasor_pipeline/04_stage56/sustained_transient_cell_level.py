@@ -31,6 +31,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from scipy.fft import fft
 from scipy.stats import circstd
+from condition_layout import resolve_cluster_dir, sibling_c0
 
 EPS = 1e-9
 
@@ -186,9 +187,23 @@ def analyze_condition(
     off_window_ms: Tuple[float, float],
     c0_dir: Optional[Path] = None,
 ) -> Path:
-    condition_dir = Path(condition_dir)
-    stage4 = condition_dir / "Stage4_Visualization"
-    stage5_cell = condition_dir / "Stage5_Cell_Fourier_Analysis"
+    requested_dir = Path(condition_dir)
+    cluster_dir = resolve_cluster_dir(requested_dir)
+    condition_dir = cluster_dir
+    stage4 = cluster_dir / "Stage4_Visualization"
+    stage5_cell = requested_dir / "Stage5_Cell_Fourier_Analysis"
+    if not (stage5_cell / "cell_fourier_results.csv").exists():
+        alt = cluster_dir / "Stage5_Cell_Fourier_Analysis"
+        if (alt / "cell_fourier_results.csv").exists():
+            stage5_cell = alt
+    if not (stage5_cell / "cell_fourier_results.csv").exists():
+        raise FileNotFoundError(
+            f"No Fourier results for {requested_dir}. Run Fourier cell classification on this contrast first."
+        )
+    if c0_dir is None:
+        c0_dir = sibling_c0(cluster_dir)
+    elif not (Path(c0_dir) / "Stage4_Visualization" / "X_processed.npy").exists():
+        c0_dir = resolve_cluster_dir(Path(c0_dir))
 
     X = np.load(stage4 / "X_processed.npy")
 
@@ -199,19 +214,22 @@ def analyze_condition(
             if X_c0.shape == X.shape:
                 X = X - X_c0
 
+    print(f"Clustering: {cluster_dir}")
+    print(f"Fourier results: {stage5_cell}")
     df = pd.read_csv(stage5_cell / "cell_fourier_results.csv")
 
     df = df[df["label"].isin(["ON", "OFF"])]
     df = df[df["snr"] >= float(snr_min)]
 
-    out_dir = condition_dir / "Stage6_Cell_SustainedTransient"
+    out_dir = requested_dir / "Stage6_Cell_SustainedTransient"
     if out_dir.exists():
         for f in out_dir.iterdir():
             if f.is_file():
                 f.unlink()
             else:
                 shutil.rmtree(f)
-    out_dir.mkdir(exist_ok=True)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    print(f"Sustained/transient output: {out_dir}")
 
     period_bins = 50
     bin_ms = 10.0
@@ -755,7 +773,8 @@ def main() -> None:
         a, b = s.split(",")
         return float(a), float(b)
 
-    out = analyze_condition(
+    try:
+        out = analyze_condition(
         Path(args.condition_dir),
         snr_min=float(args.snr_min),
         transient_ms=float(args.transient_ms),
@@ -767,6 +786,8 @@ def main() -> None:
         off_window_ms=_parse(args.off_window_ms),
         c0_dir=Path(args.c0_dir) if args.c0_dir else None,
     )
+    except FileNotFoundError as exc:
+        raise SystemExit(str(exc))
 
 
 if __name__ == "__main__":

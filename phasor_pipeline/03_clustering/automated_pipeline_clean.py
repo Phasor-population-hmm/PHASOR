@@ -219,6 +219,37 @@ def run_pipeline_for_dataset(data_dir: str,
     }
 
 
+def _contrast_arrays(folder: Path) -> List[Path]:
+    """Filtered arrays that belong to one contrast. Combined cAny files are not a contrast."""
+    kept = []
+    for path in sorted(folder.glob("*_4d.npz")):
+        name = path.name.lower()
+        if "cany" in name or "fany" in name:
+            continue
+        kept.append(path)
+    return kept
+
+
+def _cluster_targets(data_dir: Path) -> List[Path]:
+    if not data_dir.is_dir():
+        raise SystemExit(f"Dataset folder not found: {data_dir}")
+    subs = [child for child in sorted(data_dir.iterdir()) if child.is_dir() and _contrast_arrays(child)]
+    if subs:
+        names = ", ".join(child.name for child in subs)
+        print(f"Clustering contrast folders: {names}")
+        return subs
+    if _contrast_arrays(data_dir):
+        return [data_dir]
+    combined = [path.name for path in data_dir.glob("*_4d.npz")]
+    if combined:
+        raise SystemExit(
+            "This folder has a combined array and no per-contrast folders "
+            f"({', '.join(combined)}). Run Filter by contrast again. "
+            "It writes c0, c50, c60, c70, c80, and c90 as separate folders."
+        )
+    raise SystemExit(f"No filtered contrast folders with *_4d.npz under {data_dir}")
+
+
 if __name__ == '__main__':
     import argparse
 
@@ -243,20 +274,23 @@ if __name__ == '__main__':
     parser.add_argument('--trace_stat', choices=['mean', 'median'], default='mean', help='Cluster trace aggregation for Stage4 traces plot')
 
     args = parser.parse_args()
+    targets = _cluster_targets(Path(args.data_dir))
 
-    results = run_pipeline_for_dataset(
-        data_dir=args.data_dir,
-        umap_components=args.umap_components,
-        umap_neighbors=args.umap_neighbors,
-        optics_min_samples=args.optics_min_samples,
-        optics_min_cluster_frac=args.optics_min_cluster_frac,
-        optics_xi=args.optics_xi,
-        seeds=args.seeds,
-        criteria={'ari_threshold': args.ari_threshold,
-                  'sil_threshold': args.sil_threshold,
-                  'noise_threshold': args.noise_threshold},
-        sigma_bins=args.sigma_bins,
-        keep_timebins=args.keep_timebins,
-        trace_stat=args.trace_stat,
-    )
+    for target in targets:
+        print(f"Clustering {target}")
+        run_pipeline_for_dataset(
+            data_dir=str(target),
+            umap_components=args.umap_components,
+            umap_neighbors=args.umap_neighbors,
+            optics_min_samples=args.optics_min_samples,
+            optics_min_cluster_frac=args.optics_min_cluster_frac,
+            optics_xi=args.optics_xi,
+            seeds=args.seeds,
+            criteria={'ari_threshold': args.ari_threshold,
+                      'sil_threshold': args.sil_threshold,
+                      'noise_threshold': args.noise_threshold},
+            sigma_bins=args.sigma_bins,
+            keep_timebins=args.keep_timebins,
+            trace_stat=args.trace_stat,
+        )
 

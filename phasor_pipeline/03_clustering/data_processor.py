@@ -26,16 +26,17 @@ class DataProcessor:
 
 
     def infer_genotype_from_filename(self, filename: str) -> str:
-        """Infer genotype label from a filename (best-effort)."""
-        name = os.path.basename(filename).lower()
-
-        if "wt_" in name or name.startswith("wt") or "_wt_" in name:
-            return "wt"
-        elif "gnat2" in name or "gnat" in name:
-            return "gnat2"
-        else:
-            warnings.warn(f"Could not infer genotype from {filename!r}; using 'unknown'")
-            return "unknown"
+        """Infer genotype label from a file path (best-effort)."""
+        parts = [part for part in str(filename).replace("\\", "/").lower().split("/") if part]
+        for part in reversed(parts):
+            if part.startswith("wt"):
+                return "wt"
+            if part.startswith("rd"):
+                return "rd"
+            if "gnat" in part:
+                return "gnat2"
+        warnings.warn(f"Could not infer genotype from {filename!r}; using 'unknown'")
+        return "unknown"
 
     def discover_datasets(self) -> List[Tuple[str, str]]:
         """Find all *_4d.npz files and infer genotypes

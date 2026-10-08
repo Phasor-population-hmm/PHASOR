@@ -15,6 +15,74 @@ from pathlib import Path
 import argparse
 
 
+def _recording_example_dir(run_dir: Path) -> Path | None:
+    parts = run_dir.parts
+    for index, part in enumerate(parts):
+        if part == "phasor_output" and index + 3 < len(parts) and parts[index + 1] == "runs":
+            return Path(*parts[:index]) / "example_data" / parts[index + 2]
+    return None
+
+
+def _main_4d_files(run_dir: Path) -> list[Path]:
+    roots = [run_dir]
+    if run_dir.name == "03_labels":
+        roots.append(run_dir.parent)
+    example = _recording_example_dir(run_dir)
+    if example is not None:
+        roots.append(example)
+    found = []
+    seen = set()
+    for root in roots:
+        if not root.exists():
+            continue
+        for pattern in ("*_4d.npz", "Full_Recording/*_4d.npz"):
+            for path in sorted(root.glob(pattern)):
+                if "filtered" in path.name.lower() or path in seen:
+                    continue
+                seen.add(path)
+                found.append(path)
+    return found
+
+
+def _filtered_roots(run_dir: Path) -> list[Path]:
+    run_root = run_dir.parent if run_dir.name == "03_labels" else run_dir
+    return [
+        run_root / "02_processing" / "filtered",
+        run_dir / "02_processing" / "filtered",
+        run_dir / "clustering" / "filtered",
+        run_dir / "Filtered_Data",
+        run_dir / "Filtered Data",
+        run_dir / "Filtered data",
+        run_root / "Filtered_Data",
+    ]
+
+
+def _contrast_dir(run_dir: Path, contrast: str) -> Path | None:
+    short = contrast.replace("_f2Hz", "").replace("_f4Hz", "")
+    cond_num = "".join(ch for ch in short if ch.isdigit())
+    names = [contrast, short]
+    if cond_num:
+        names.extend([
+            f"c{cond_num}",
+            f"C{cond_num}",
+            f"c{cond_num}_f2Hz",
+            f"C-{cond_num}",
+            f"c-{cond_num}",
+        ])
+    ordered = list(dict.fromkeys(names))
+    for root in _filtered_roots(run_dir):
+        if not root.exists():
+            continue
+        for name in ordered:
+            cand = root / name
+            if cand.exists():
+                return cand
+    legacy = run_dir / "clustering" / "filtered" / contrast
+    if legacy.exists():
+        return legacy
+    return None
+
+
 def generate_label_index_map_csv(
     run_dir: Path,
     contrast_folders: list[str],
@@ -31,9 +99,21 @@ def generate_label_index_map_csv(
     out_dir = run_dir / output_subdir
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    meta_files = sorted(run_dir.glob("*_metadata.npz"))
+    meta_roots = [run_dir]
+    if run_dir.name == "03_labels":
+        meta_roots.append(run_dir.parent)
+    example = _recording_example_dir(run_dir)
+    if example is not None:
+        meta_roots.append(example)
+    meta_files = []
+    for root in meta_roots:
+        if root.exists():
+            meta_files.extend(sorted(root.glob("*_metadata.npz")))
+            meta_files.extend(sorted(root.glob("Full_Recording/*_metadata.npz")))
     if not meta_files:
-        meta_files = sorted(run_dir.glob("Full_Recording/*_metadata.npz"))
+        for root in _filtered_roots(run_dir):
+            if root.exists():
+                meta_files.extend(sorted(root.glob("**/*_filtered_metadata.npz")))
     if not meta_files:
         meta_files = sorted(run_dir.glob("Filtered_Data/**/*_filtered_metadata.npz"))
     if not meta_files:
@@ -41,13 +121,12 @@ def generate_label_index_map_csv(
     if not meta_files:
         meta_files = sorted(run_dir.glob("clustering/filtered/**/*_filtered_metadata.npz"))
 
-    main_4d_list = list(run_dir.glob("*_4d.npz"))
+    main_4d_list = _main_4d_files(run_dir)
     if not main_4d_list:
-        main_4d_list = list(run_dir.glob("Full_Recording/*_4d.npz"))
-    if not main_4d_list:
-        main_4d_list = list(run_dir.glob("**/*_4d.npz"))
-    if not main_4d_list:
-        raise FileNotFoundError(f"No *_4d.npz found under {run_dir} (need main run 4d for present cells)")
+        raise FileNotFoundError(
+            f"No recording *_4d.npz found for {run_dir}. "
+            "The label maps need the full array, such as example_data/<recording>/array_4d.npz."
+        )
     main_array = np.load(main_4d_list[0])["array"]
     _, _, mc, mu = main_array.shape
 
@@ -70,31 +149,7 @@ def generate_label_index_map_csv(
 
     saved = []
     for contrast in contrast_folders:
-        cond_dir = run_dir / "clustering" / "filtered" / contrast
-        if not cond_dir.exists():
-            short = contrast.replace("_f2Hz", "").replace("_f4Hz", "")
-            cond_num = "".join(ch for ch in short if ch.isdigit())
-            variants = [short]
-            if cond_num:
-                variants.extend(
-                    [f"C-{cond_num}", f"c-{cond_num}", f"C{cond_num}", f"c{cond_num}"]
-                )
-            roots = [
-                run_dir / "Filtered_Data",
-                run_dir / "Filtered Data",
-                run_dir / "Filtered data",
-            ]
-            cond_dir = None
-            for root in roots:
-                if not root.exists():
-                    continue
-                for v in variants:
-                    cand = root / v
-                    if cand.exists():
-                        cond_dir = cand
-                        break
-                if cond_dir is not None:
-                    break
+        cond_dir = _contrast_dir(run_dir, contrast)
         if cond_dir is None or not cond_dir.exists():
             continue
 
@@ -165,9 +220,16 @@ def main():
     parser.add_argument("--out-dir-name", default="label_index_maps", help="Output subdir name")
     args = parser.parse_args()
     run_dir = Path(args.run_dir)
-    if not run_dir.exists():
-        raise SystemExit(f"Run directory not found: {run_dir}")
+    run_dir.mkdir(parents=True, exist_ok=True)
     saved = generate_label_index_map_csv(run_dir, args.contrasts, args.out_dir_name)
+    if not saved:
+        raise SystemExit(
+            f"No label maps written for {run_dir}. "
+            "Run Filter by contrast and clustering first. "
+            "Each contrast folder needs a filtered array and Stage4_Visualization/cluster_labels.npy."
+        )
+    for path in saved:
+        print(path)
 
 
 if __name__ == "__main__":

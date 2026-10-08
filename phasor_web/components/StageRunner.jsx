@@ -14,11 +14,11 @@ const STAGE_HINT = {
   locate_synctones: "The .h5 for this recording is already filled in.",
   stats: "The dashboard is saved in 01_preprocessing/stats.",
   raster: "Raster plots are saved in 01_preprocessing/rasters.",
-  filter: "The data folder is this recording. The output folder is created in its run directory.",
-  cluster: "This loads the filtered folder from this recording. Run Filter by contrast first.",
-  label_map: "Label maps are written inside this recording’s run directory.",
-  fourier: "Pick a contrast. This folder belongs to the recording and is filled after clustering.",
-  sustained_transient: "Uses the same contrast folder as Fourier classification.",
+  filter: "Writes one folder per contrast (c0, c50, c60, c70, c80, c90) at 2 Hz. Contrasts are not mixed into one file.",
+  cluster: "Clusters each contrast folder in this directory. Run Filter by contrast first.",
+  label_map: "Reads the recording array and the clustered contrast folders, then writes the maps here.",
+  fourier: "Pick a contrast. That contrast must already be clustered in the filtered folder.",
+  sustained_transient: "Uses the same contrast as Fourier classification. Run Fourier for that contrast first.",
 };
 
 export default function StageRunner({ stage }) {

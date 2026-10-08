@@ -27,6 +27,7 @@ import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 from scipy.fft import fft, ifft
 from scipy.stats import circstd
+from condition_layout import resolve_cluster_dir, sibling_c0
 
 EPS = 1e-9
 N_CYCLES = 6
@@ -119,11 +120,19 @@ class CellFourierAnalyzer:
         output_subdir: Optional[str] = None,
         c0_dir: Optional[Path] = None,
     ):
-        self.condition_dir = Path(condition_dir)
-        self.stage4_dir = self.condition_dir / "Stage4_Visualization"
+        self.requested_dir = Path(condition_dir)
+        self.cluster_dir = resolve_cluster_dir(self.requested_dir)
+        self.condition_dir = self.cluster_dir
+        self.stage4_dir = self.cluster_dir / "Stage4_Visualization"
         out_name = output_subdir if output_subdir else "Stage5_Cell_Fourier_Analysis"
-        self.out_dir = self.condition_dir / out_name
-        self.out_dir.mkdir(exist_ok=True)
+        self.out_dir = self.requested_dir / out_name
+        self.out_dir.mkdir(parents=True, exist_ok=True)
+        if c0_dir is None:
+            c0_dir = sibling_c0(self.cluster_dir)
+        print(f"Clustering: {self.cluster_dir}")
+        print(f"Fourier output: {self.out_dir}")
+        if c0_dir is not None:
+            print(f"Baseline c0: {c0_dir}")
 
         self.stim_freq  = float(stim_freq)
         self.fs         = float(sampling_rate)
@@ -496,7 +505,14 @@ def main():
                    help="Path to the c0_f2Hz condition dir whose X_processed is subtracted as baseline")
     args = p.parse_args()
 
-    analyzer = CellFourierAnalyzer(
+    try:
+        resolved_c0 = Path(args.c0_dir) if args.c0_dir else None
+        if resolved_c0 is not None and not (resolved_c0 / "Stage4_Visualization" / "X_processed.npy").exists():
+            resolved_c0 = resolve_cluster_dir(resolved_c0)
+    except FileNotFoundError as exc:
+        raise SystemExit(str(exc))
+    try:
+        analyzer = CellFourierAnalyzer(
         Path(args.condition_dir),
         start_cycle=args.start_cycle,
         end_cycle=args.end_cycle,
@@ -508,8 +524,10 @@ def main():
         a2_min=float(args.a2_min),
         x_min=float(args.x_min),
         output_subdir=args.output_subdir,
-        c0_dir=Path(args.c0_dir) if args.c0_dir else None,
+        c0_dir=resolved_c0,
     )
+    except FileNotFoundError as exc:
+        raise SystemExit(str(exc))
     analyzer.analyze()
     analyzer.plot_population()
     analyzer.plot_profiles()

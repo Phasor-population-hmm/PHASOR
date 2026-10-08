@@ -74,8 +74,8 @@ Work through Pipeline in this order.
 2. Population stats reads `array_4d.npz`, `stims.json`, and `spikes.txt`, and writes tables to `phasor_output/runs/<recording>/01_preprocessing/stats`.
 3. Raster sequence plots reads `array_4d.npz` and `stims.json`, and writes figures to `phasor_output/runs/<recording>/01_preprocessing/rasters`.
 4. Filter by contrast reads the recording directory and `stims.json`, and writes contrast folders to `phasor_output/runs/<recording>/02_processing/filtered`.
-5. UMAP + OPTICS clustering is run on a filtered contrast folder. It writes cluster assignments in that folder.
-6. Label index maps, Fourier cell classification, and sustained/transient classification use the filtered run directory. Their outputs are written under `phasor_output/runs/<recording>/03_labels` and `phasor_output/runs/<recording>/04_fourier/c90`.
+5. UMAP + OPTICS clustering reads `02_processing/filtered` and clusters each contrast folder in place.
+6. Label index maps read the recording array and those contrast folders, and write CSVs under `phasor_output/runs/<recording>/03_labels`. Fourier cell classification and sustained/transient classification read the clustered contrast and write under `phasor_output/runs/<recording>/04_fourier/<contrast>`.
 
 Locate synctones uses the `.h5` file in the selected recording directory. The included recordings already provide `synctones.csv`.
 
