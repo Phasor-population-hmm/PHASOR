@@ -12,5 +12,6 @@ node_modules/
 *.npz
 !example_data/**/*.npz
 *.h5
+example_data/**/5_Processing_Fourier_classification
 *.log
 .DS_Store

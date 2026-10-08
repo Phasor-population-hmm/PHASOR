@@ -4,17 +4,17 @@
     "animal": "WT1",
     "label": "Run 1",
     "files": {
-      "h5": "",
+      "h5": "example_data/wt1_run1/2026-04-22T14-01-49wt1_Green=255_OD=4_2Hz_run1_B-00068.h5",
       "npz": "example_data/wt1_run1/array_4d.npz",
       "stims": "example_data/wt1_run1/stims.json",
       "spikes": "example_data/wt1_run1/spikes.txt",
       "synctones": "example_data/wt1_run1/synctones.csv",
-      "bundle": ""
+      "bundle": "example_data/wt1_run1/bundle.npz"
     },
     "dirs": {
       "data": "example_data/wt1_run1"
     },
-    "analysis_base": "",
+    "analysis_base": "example_data/wt1_run1/5_Processing_Fourier_classification",
     "workspace": {
       "root": "runs/wt1_run1",
       "stats": "runs/wt1_run1/01_preprocessing/stats",
@@ -32,17 +32,17 @@
     "animal": "WT1",
     "label": "Run 2",
     "files": {
-      "h5": "",
+      "h5": "example_data/wt1_run2/2026-04-22T14-45-59wt1_Green=255_OD=4_2Hz_run2_B-00068.h5",
       "npz": "example_data/wt1_run2/array_4d.npz",
       "stims": "example_data/wt1_run2/stims.json",
       "spikes": "example_data/wt1_run2/spikes.txt",
       "synctones": "example_data/wt1_run2/synctones.csv",
-      "bundle": ""
+      "bundle": "example_data/wt1_run2/bundle.npz"
     },
     "dirs": {
       "data": "example_data/wt1_run2"
     },
-    "analysis_base": "",
+    "analysis_base": "example_data/wt1_run2/5_Processing_Fourier_classification",
     "workspace": {
       "root": "runs/wt1_run2",
       "stats": "runs/wt1_run2/01_preprocessing/stats",
@@ -60,17 +60,17 @@
     "animal": "WT1",
     "label": "AP4 2.5 \u00b5M",
     "files": {
-      "h5": "",
+      "h5": "example_data/wt1_ap4_run1/2026-04-22T16-09-46wt1_Green=255_OD=4_AP4_2Hz_B-00068.h5",
       "npz": "example_data/wt1_ap4_run1/array_4d.npz",
       "stims": "example_data/wt1_ap4_run1/stims.json",
       "spikes": "example_data/wt1_ap4_run1/spikes.txt",
       "synctones": "example_data/wt1_ap4_run1/synctones.csv",
-      "bundle": ""
+      "bundle": "example_data/wt1_ap4_run1/bundle.npz"
     },
     "dirs": {
       "data": "example_data/wt1_ap4_run1"
     },
-    "analysis_base": "",
+    "analysis_base": "example_data/wt1_ap4_run1/5_Processing_Fourier_classification",
     "workspace": {
       "root": "runs/wt1_ap4_run1",
       "stats": "runs/wt1_ap4_run1/01_preprocessing/stats",
@@ -88,17 +88,17 @@
     "animal": "WT1",
     "label": "Washout",
     "files": {
-      "h5": "",
+      "h5": "example_data/wt1_washout_run1/2026-04-22T17-38-26wt1_Green=255_OD=4_wash1_2Hz_B-00068.h5",
       "npz": "example_data/wt1_washout_run1/array_4d.npz",
       "stims": "example_data/wt1_washout_run1/stims.json",
       "spikes": "example_data/wt1_washout_run1/spikes.txt",
       "synctones": "example_data/wt1_washout_run1/synctones.csv",
-      "bundle": ""
+      "bundle": "example_data/wt1_washout_run1/bundle.npz"
     },
     "dirs": {
       "data": "example_data/wt1_washout_run1"
     },
-    "analysis_base": "",
+    "analysis_base": "example_data/wt1_washout_run1/5_Processing_Fourier_classification",
     "workspace": {
       "root": "runs/wt1_washout_run1",
       "stats": "runs/wt1_washout_run1/01_preprocessing/stats",
@@ -116,17 +116,17 @@
     "animal": "WT2",
     "label": "Run 1",
     "files": {
-      "h5": "",
+      "h5": "example_data/wt2_run1/2026-05-20T11-37-56wt2_Green=255_OD=4_2Hz_Run1_B-00068.h5",
       "npz": "example_data/wt2_run1/array_4d.npz",
       "stims": "example_data/wt2_run1/stims.json",
       "spikes": "example_data/wt2_run1/spikes.txt",
       "synctones": "example_data/wt2_run1/synctones.csv",
-      "bundle": ""
+      "bundle": "example_data/wt2_run1/bundle.npz"
     },
     "dirs": {
       "data": "example_data/wt2_run1"
     },
-    "analysis_base": "",
+    "analysis_base": "example_data/wt2_run1/5_Processing_Fourier_classification",
     "workspace": {
       "root": "runs/wt2_run1",
       "stats": "runs/wt2_run1/01_preprocessing/stats",
@@ -144,17 +144,17 @@
     "animal": "WT2",
     "label": "Run 2",
     "files": {
-      "h5": "",
+      "h5": "example_data/wt2_run2/2026-05-20T12-23-30wt2_Green=255_OD=4_2Hz_Run2_B-00068.h5",
       "npz": "example_data/wt2_run2/array_4d.npz",
       "stims": "example_data/wt2_run2/stims.json",
       "spikes": "example_data/wt2_run2/spikes.txt",
       "synctones": "example_data/wt2_run2/synctones.csv",
-      "bundle": ""
+      "bundle": "example_data/wt2_run2/bundle.npz"
     },
     "dirs": {
       "data": "example_data/wt2_run2"
     },
-    "analysis_base": "",
+    "analysis_base": "example_data/wt2_run2/5_Processing_Fourier_classification",
     "workspace": {
       "root": "runs/wt2_run2",
       "stats": "runs/wt2_run2/01_preprocessing/stats",
@@ -172,17 +172,17 @@
     "animal": "WT2",
     "label": "AP4 2.5 \u00b5M",
     "files": {
-      "h5": "",
+      "h5": "example_data/wt2_ap4_run1/2026-05-20T13-47-17wt2_Green=255_OD=4_AP4(2.5)_2Hz_B-00068.h5",
       "npz": "example_data/wt2_ap4_run1/array_4d.npz",
       "stims": "example_data/wt2_ap4_run1/stims.json",
       "spikes": "example_data/wt2_ap4_run1/spikes.txt",
       "synctones": "example_data/wt2_ap4_run1/synctones.csv",
-      "bundle": ""
+      "bundle": "example_data/wt2_ap4_run1/bundle.npz"
     },
     "dirs": {
       "data": "example_data/wt2_ap4_run1"
     },
-    "analysis_base": "",
+    "analysis_base": "example_data/wt2_ap4_run1/5_Processing_Fourier_classification",
     "workspace": {
       "root": "runs/wt2_ap4_run1",
       "stats": "runs/wt2_ap4_run1/01_preprocessing/stats",
@@ -200,17 +200,17 @@
     "animal": "WT2",
     "label": "Washout",
     "files": {
-      "h5": "",
+      "h5": "example_data/wt2_washout_run1/2026-05-20T15-15-33wt2_Green=255_OD=4_washout(2.5)_2Hz_B-00068.h5",
       "npz": "example_data/wt2_washout_run1/array_4d.npz",
       "stims": "example_data/wt2_washout_run1/stims.json",
       "spikes": "example_data/wt2_washout_run1/spikes.txt",
       "synctones": "example_data/wt2_washout_run1/synctones.csv",
-      "bundle": ""
+      "bundle": "example_data/wt2_washout_run1/bundle.npz"
     },
     "dirs": {
       "data": "example_data/wt2_washout_run1"
     },
-    "analysis_base": "",
+    "analysis_base": "example_data/wt2_washout_run1/5_Processing_Fourier_classification",
     "workspace": {
       "root": "runs/wt2_washout_run1",
       "stats": "runs/wt2_washout_run1/01_preprocessing/stats",
@@ -228,17 +228,17 @@
     "animal": "WT3",
     "label": "No projection",
     "files": {
-      "h5": "",
+      "h5": "example_data/wt3_no_projection/2026-05-13T12-03-53wt3_Green=255_OD=4_2Hz_noProjection_B-00068.h5",
       "npz": "example_data/wt3_no_projection/array_4d.npz",
       "stims": "example_data/wt3_no_projection/stims.json",
       "spikes": "example_data/wt3_no_projection/spikes.txt",
       "synctones": "example_data/wt3_no_projection/synctones.csv",
-      "bundle": ""
+      "bundle": "example_data/wt3_no_projection/bundle.npz"
     },
     "dirs": {
       "data": "example_data/wt3_no_projection"
     },
-    "analysis_base": "",
+    "analysis_base": "example_data/wt3_no_projection/5_Processing_Fourier_classification",
     "workspace": {
       "root": "runs/wt3_no_projection",
       "stats": "runs/wt3_no_projection/01_preprocessing/stats",
@@ -256,17 +256,17 @@
     "animal": "RD1",
     "label": "Run 1",
     "files": {
-      "h5": "",
+      "h5": "example_data/rd1/2025-12-18T12-01-28rd1_Green=255_noFilter_2Hz_PRE_B-00068.h5",
       "npz": "example_data/rd1/array_4d.npz",
       "stims": "example_data/rd1/stims.json",
       "spikes": "example_data/rd1/spikes.txt",
       "synctones": "example_data/rd1/synctones.csv",
-      "bundle": ""
+      "bundle": "example_data/rd1/bundle.npz"
     },
     "dirs": {
       "data": "example_data/rd1"
     },
-    "analysis_base": "",
+    "analysis_base": "example_data/rd1/5_Processing_Fourier_classification",
     "workspace": {
       "root": "runs/rd1",
       "stats": "runs/rd1/01_preprocessing/stats",

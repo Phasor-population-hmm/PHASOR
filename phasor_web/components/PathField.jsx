@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from "react";
 
-function shortFolder(value) {
+function shownPath(value) {
   if (!value) return "";
-  const marker = "phasor_output";
-  const index = value.indexOf(marker);
-  if (index >= 0) return value.slice(index);
+  for (const marker of ["phasor_output", "example_data"]) {
+    const index = value.indexOf(marker);
+    if (index >= 0) return value.slice(index);
+  }
   const parts = value.split("/").filter(Boolean);
   return parts.slice(-2).join("/");
 }
@@ -47,8 +48,7 @@ export default function PathField({ label, kind = "file", value, onChange, filte
   }
 
   const entries = (listing?.entries || []).filter((e) => (kind === "dir" ? e.is_dir : matchesFilter(e, filter)));
-  const marker = value ? value.indexOf("phasor_output") : -1;
-  const shown = marker >= 0 ? value.slice(marker) : value ? value.split("/").filter(Boolean).pop() : "";
+  const shown = shownPath(value);
 
   return (
     <div className="mb-4">
@@ -110,7 +110,7 @@ export default function PathField({ label, kind = "file", value, onChange, filte
               {entries.length === 0 && <div className="px-4 py-8 text-center text-sm text-neutral-500">Nothing to choose here</div>}
             </div>
             <div className="flex items-center justify-between gap-3 border-t border-white/10 px-4 py-3">
-              <span className="truncate font-mono text-[11px] text-neutral-500">{shortFolder(listing?.cwd)}</span>
+              <span className="truncate font-mono text-[11px] text-neutral-500">{shownPath(listing?.cwd)}</span>
               <div className="flex gap-2">
                 {kind === "dir" && listing?.cwd && (
                   <button

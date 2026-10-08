@@ -58,8 +58,11 @@ Each recording directory contains:
 - `synctones.csv`, the stimulus-onset table
 - `stims.json`, the stimulus description
 - `array_4d.npz`, the aligned spike array
+- `bundle.npz`, the HMM decode used by Post-HMM plots
 
-After the application starts, select a recording in the top bar. Those four files are assigned automatically, and the output directories under `phasor_output/runs/<recording>/` are created for that recording.
+When a `.h5` recording is present in that same directory, Locate synctones assigns it.
+
+After the application starts, select a recording in the top bar. The files for that recording are assigned, and the output directories under `phasor_output/runs/<recording>/` are created for that recording. Changing the recording replaces those paths.
 
 Other files clears the assigned paths and accepts a different dataset. Select each input with the file browser on the relevant stage.
 
@@ -74,7 +77,7 @@ Work through Pipeline in this order.
 5. UMAP + OPTICS clustering is run on a filtered contrast folder. It writes cluster assignments in that folder.
 6. Label index maps, Fourier cell classification, and sustained/transient classification use the filtered run directory. Their outputs are written under `phasor_output/runs/<recording>/03_labels` and `phasor_output/runs/<recording>/04_fourier/c90`.
 
-Locate synctones requires an MEA `.h5` file. The included recordings already provide `synctones.csv`, so that stage is used only when a new `.h5` recording is supplied.
+Locate synctones uses the `.h5` file in the selected recording directory. The included recordings already provide `synctones.csv`.
 
 ## Hidden Markov model
 
