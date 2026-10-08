@@ -1,0 +1,1825 @@
+{
+    "title": "FFsine_2Hz",
+    "description": "Sinusoidal variations of intensity over full field.",
+    "appVersion": "0.1.1",
+    "stimuli": [
+        {
+            "durationMs": 10000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "Solid",
+            "bodyMs": 10000,
+            "meta": {
+                "comment": "initial black"
+            }
+        },
+        {
+            "durationMs": 1040,
+            "bgColor": "oklch(0.5 0 0)",
+            "colorTail": false,
+            "stimType": "Solid",
+            "bodyMs": 520,
+            "tailMs": 520,
+            "meta": {
+                "comment": "integrity flash"
+            }
+        },
+        {
+            "durationMs": 1040,
+            "bgColor": "red",
+            "colorTail": false,
+            "stimType": "Solid",
+            "bodyMs": 520,
+            "tailMs": 520,
+            "meta": {
+                "comment": "integrity flash"
+            }
+        },
+        {
+            "durationMs": 1040,
+            "bgColor": "green",
+            "colorTail": false,
+            "stimType": "Solid",
+            "bodyMs": 520,
+            "tailMs": 520,
+            "meta": {
+                "comment": "integrity flash"
+            }
+        },
+        {
+            "durationMs": 1040,
+            "bgColor": "blue",
+            "colorTail": false,
+            "stimType": "Solid",
+            "bodyMs": 520,
+            "tailMs": 520,
+            "meta": {
+                "comment": "integrity flash"
+            }
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 50,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 60,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 70,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 80,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 90,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 50,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 60,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 70,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 80,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 90,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 50,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 60,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 70,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 80,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 90,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 50,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 60,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 70,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 80,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 60000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "Solid",
+            "bodyMs": 60000,
+            "meta": {
+                "comment": "rest"
+            }
+        },
+        {
+            "durationMs": 60000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "Solid",
+            "bodyMs": 60000,
+            "meta": {
+                "comment": "rest"
+            }
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 90,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 50,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 60,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 70,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 80,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 90,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 50,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 60,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 70,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 80,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 90,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 50,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 60,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 70,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 80,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 90,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 50,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 60,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 70,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 80,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 60000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "Solid",
+            "bodyMs": 60000,
+            "meta": {
+                "comment": "rest"
+            }
+        },
+        {
+            "durationMs": 60000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "Solid",
+            "bodyMs": 60000,
+            "meta": {
+                "comment": "rest"
+            }
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 90,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 50,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 60,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 70,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 80,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 90,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 50,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 60,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 70,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 80,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 90,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 50,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 60,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 70,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 80,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 90,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 50,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 60,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 70,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 80,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 60000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "Solid",
+            "bodyMs": 60000,
+            "meta": {
+                "comment": "rest"
+            }
+        },
+        {
+            "durationMs": 60000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "Solid",
+            "bodyMs": 60000,
+            "meta": {
+                "comment": "rest"
+            }
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 90,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 50,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 60,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 70,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 80,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 90,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 50,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 60,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 70,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 80,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 90,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 50,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 60,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 70,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 80,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 0,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 3000,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "FFSine",
+            "bodyMs": 3000,
+            "c": 90,
+            "m": 50,
+            "hz": 2,
+            "delayMs": 0
+        },
+        {
+            "durationMs": 1040,
+            "bgColor": "oklch(0.5 0 0)",
+            "colorTail": false,
+            "stimType": "Solid",
+            "bodyMs": 520,
+            "tailMs": 520,
+            "meta": {
+                "comment": "integrity flash"
+            }
+        },
+        {
+            "durationMs": 1040,
+            "bgColor": "red",
+            "colorTail": false,
+            "stimType": "Solid",
+            "bodyMs": 520,
+            "tailMs": 520,
+            "meta": {
+                "comment": "integrity flash"
+            }
+        },
+        {
+            "durationMs": 1040,
+            "bgColor": "green",
+            "colorTail": false,
+            "stimType": "Solid",
+            "bodyMs": 520,
+            "tailMs": 520,
+            "meta": {
+                "comment": "integrity flash"
+            }
+        },
+        {
+            "durationMs": 1040,
+            "bgColor": "blue",
+            "colorTail": false,
+            "stimType": "Solid",
+            "bodyMs": 520,
+            "tailMs": 520,
+            "meta": {
+                "comment": "integrity flash"
+            }
+        },
+        {
+            "durationMs": 200,
+            "bgColor": "black",
+            "colorTail": false,
+            "stimType": "Solid",
+            "bodyMs": 200,
+            "meta": {
+                "comment": "final black"
+            }
+        }
+    ]
+}

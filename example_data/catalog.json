@@ -1,0 +1,282 @@
+[
+  {
+    "id": "wt1_run1",
+    "animal": "WT1",
+    "label": "Run 1",
+    "files": {
+      "h5": "paper/wt1_run1/2_Plexon_processed/2026-04-22T14-01-49wt1_Green=255_OD=4_2Hz_run1_B-00068.h5",
+      "npz": "example_data/wt1_run1/array_4d.npz",
+      "stims": "example_data/wt1_run1/stims.json",
+      "spikes": "example_data/wt1_run1/spikes.txt",
+      "synctones": "example_data/wt1_run1/synctones.csv",
+      "bundle": "paper/wt1_run1/final_analysis/bundle.npz"
+    },
+    "dirs": {
+      "data": "example_data/wt1_run1"
+    },
+    "analysis_base": "paper/wt1_run1/5_Processing_Fourier_classification",
+    "workspace": {
+      "root": "runs/wt1_run1",
+      "stats": "runs/wt1_run1/01_preprocessing/stats",
+      "raster": "runs/wt1_run1/01_preprocessing/rasters",
+      "filtered": "runs/wt1_run1/02_processing/filtered",
+      "labels": "runs/wt1_run1/03_labels",
+      "fourier": "runs/wt1_run1/04_fourier/c90",
+      "sustained": "runs/wt1_run1/04_fourier/c90",
+      "hmm": "runs/wt1_run1/05_hmm",
+      "analysis": "runs/wt1_run1/06_analysis"
+    }
+  },
+  {
+    "id": "wt1_run2",
+    "animal": "WT1",
+    "label": "Run 2",
+    "files": {
+      "h5": "paper/wt1_run2/2_Plexon_processed/2026-04-22T14-45-59wt1_Green=255_OD=4_2Hz_run2_B-00068.h5",
+      "npz": "example_data/wt1_run2/array_4d.npz",
+      "stims": "example_data/wt1_run2/stims.json",
+      "spikes": "example_data/wt1_run2/spikes.txt",
+      "synctones": "example_data/wt1_run2/synctones.csv",
+      "bundle": "paper/wt1_run2/final_analysis/bundle.npz"
+    },
+    "dirs": {
+      "data": "example_data/wt1_run2"
+    },
+    "analysis_base": "paper/wt1_run2/5_Processing_Fourier_classification",
+    "workspace": {
+      "root": "runs/wt1_run2",
+      "stats": "runs/wt1_run2/01_preprocessing/stats",
+      "raster": "runs/wt1_run2/01_preprocessing/rasters",
+      "filtered": "runs/wt1_run2/02_processing/filtered",
+      "labels": "runs/wt1_run2/03_labels",
+      "fourier": "runs/wt1_run2/04_fourier/c90",
+      "sustained": "runs/wt1_run2/04_fourier/c90",
+      "hmm": "runs/wt1_run2/05_hmm",
+      "analysis": "runs/wt1_run2/06_analysis"
+    }
+  },
+  {
+    "id": "wt1_ap4_run1",
+    "animal": "WT1",
+    "label": "AP4 2.5 \u00b5M",
+    "files": {
+      "h5": "paper/wt1_ap4_run1/2_Plexon_processed/2026-04-22T16-09-46wt1_Green=255_OD=4_AP4_2Hz_B-00068.h5",
+      "npz": "example_data/wt1_ap4_run1/array_4d.npz",
+      "stims": "example_data/wt1_ap4_run1/stims.json",
+      "spikes": "example_data/wt1_ap4_run1/spikes.txt",
+      "synctones": "example_data/wt1_ap4_run1/synctones.csv",
+      "bundle": "paper/wt1_ap4_run1/final_analysis/bundle.npz"
+    },
+    "dirs": {
+      "data": "example_data/wt1_ap4_run1"
+    },
+    "analysis_base": "paper/wt1_ap4_run1/5_Processing_Fourier_classification",
+    "workspace": {
+      "root": "runs/wt1_ap4_run1",
+      "stats": "runs/wt1_ap4_run1/01_preprocessing/stats",
+      "raster": "runs/wt1_ap4_run1/01_preprocessing/rasters",
+      "filtered": "runs/wt1_ap4_run1/02_processing/filtered",
+      "labels": "runs/wt1_ap4_run1/03_labels",
+      "fourier": "runs/wt1_ap4_run1/04_fourier/c90",
+      "sustained": "runs/wt1_ap4_run1/04_fourier/c90",
+      "hmm": "runs/wt1_ap4_run1/05_hmm",
+      "analysis": "runs/wt1_ap4_run1/06_analysis"
+    }
+  },
+  {
+    "id": "wt1_washout_run1",
+    "animal": "WT1",
+    "label": "Washout",
+    "files": {
+      "h5": "paper/wt1_washout_run1/2_Plexon_processed/2026-04-22T17-38-26wt1_Green=255_OD=4_wash1_2Hz_B-00068.h5",
+      "npz": "example_data/wt1_washout_run1/array_4d.npz",
+      "stims": "example_data/wt1_washout_run1/stims.json",
+      "spikes": "example_data/wt1_washout_run1/spikes.txt",
+      "synctones": "example_data/wt1_washout_run1/synctones.csv",
+      "bundle": "paper/wt1_washout_run1/final_analysis/bundle.npz"
+    },
+    "dirs": {
+      "data": "example_data/wt1_washout_run1"
+    },
+    "analysis_base": "paper/wt1_washout_run1/5_Processing_Fourier_classification",
+    "workspace": {
+      "root": "runs/wt1_washout_run1",
+      "stats": "runs/wt1_washout_run1/01_preprocessing/stats",
+      "raster": "runs/wt1_washout_run1/01_preprocessing/rasters",
+      "filtered": "runs/wt1_washout_run1/02_processing/filtered",
+      "labels": "runs/wt1_washout_run1/03_labels",
+      "fourier": "runs/wt1_washout_run1/04_fourier/c90",
+      "sustained": "runs/wt1_washout_run1/04_fourier/c90",
+      "hmm": "runs/wt1_washout_run1/05_hmm",
+      "analysis": "runs/wt1_washout_run1/06_analysis"
+    }
+  },
+  {
+    "id": "wt2_run1",
+    "animal": "WT2",
+    "label": "Run 1",
+    "files": {
+      "h5": "paper/wt2_run1/2_Plexon_processed/2026-05-20T11-37-56wt2_Green=255_OD=4_2Hz_Run1_B-00068.h5",
+      "npz": "example_data/wt2_run1/array_4d.npz",
+      "stims": "example_data/wt2_run1/stims.json",
+      "spikes": "example_data/wt2_run1/spikes.txt",
+      "synctones": "example_data/wt2_run1/synctones.csv",
+      "bundle": "paper/wt2_run1/final_analysis/bundle.npz"
+    },
+    "dirs": {
+      "data": "example_data/wt2_run1"
+    },
+    "analysis_base": "paper/wt2_run1/5_Processing_Fourier_classification",
+    "workspace": {
+      "root": "runs/wt2_run1",
+      "stats": "runs/wt2_run1/01_preprocessing/stats",
+      "raster": "runs/wt2_run1/01_preprocessing/rasters",
+      "filtered": "runs/wt2_run1/02_processing/filtered",
+      "labels": "runs/wt2_run1/03_labels",
+      "fourier": "runs/wt2_run1/04_fourier/c90",
+      "sustained": "runs/wt2_run1/04_fourier/c90",
+      "hmm": "runs/wt2_run1/05_hmm",
+      "analysis": "runs/wt2_run1/06_analysis"
+    }
+  },
+  {
+    "id": "wt2_run2",
+    "animal": "WT2",
+    "label": "Run 2",
+    "files": {
+      "h5": "paper/wt2_run2/2_Plexon_processed/2026-05-20T12-23-30wt2_Green=255_OD=4_2Hz_Run2_B-00068.h5",
+      "npz": "example_data/wt2_run2/array_4d.npz",
+      "stims": "example_data/wt2_run2/stims.json",
+      "spikes": "example_data/wt2_run2/spikes.txt",
+      "synctones": "example_data/wt2_run2/synctones.csv",
+      "bundle": "paper/wt2_run2/final_analysis/bundle.npz"
+    },
+    "dirs": {
+      "data": "example_data/wt2_run2"
+    },
+    "analysis_base": "paper/wt2_run2/5_Processing_Fourier_classification",
+    "workspace": {
+      "root": "runs/wt2_run2",
+      "stats": "runs/wt2_run2/01_preprocessing/stats",
+      "raster": "runs/wt2_run2/01_preprocessing/rasters",
+      "filtered": "runs/wt2_run2/02_processing/filtered",
+      "labels": "runs/wt2_run2/03_labels",
+      "fourier": "runs/wt2_run2/04_fourier/c90",
+      "sustained": "runs/wt2_run2/04_fourier/c90",
+      "hmm": "runs/wt2_run2/05_hmm",
+      "analysis": "runs/wt2_run2/06_analysis"
+    }
+  },
+  {
+    "id": "wt2_ap4_run1",
+    "animal": "WT2",
+    "label": "AP4 2.5 \u00b5M",
+    "files": {
+      "h5": "paper/wt2_ap4_run1/2_Plexon_processed/2026-05-20T13-47-17wt2_Green=255_OD=4_AP4(2.5)_2Hz_B-00068.h5",
+      "npz": "example_data/wt2_ap4_run1/array_4d.npz",
+      "stims": "example_data/wt2_ap4_run1/stims.json",
+      "spikes": "example_data/wt2_ap4_run1/spikes.txt",
+      "synctones": "example_data/wt2_ap4_run1/synctones.csv",
+      "bundle": "paper/wt2_ap4_run1/final_analysis/bundle.npz"
+    },
+    "dirs": {
+      "data": "example_data/wt2_ap4_run1"
+    },
+    "analysis_base": "paper/wt2_ap4_run1/5_Processing_Fourier_classification",
+    "workspace": {
+      "root": "runs/wt2_ap4_run1",
+      "stats": "runs/wt2_ap4_run1/01_preprocessing/stats",
+      "raster": "runs/wt2_ap4_run1/01_preprocessing/rasters",
+      "filtered": "runs/wt2_ap4_run1/02_processing/filtered",
+      "labels": "runs/wt2_ap4_run1/03_labels",
+      "fourier": "runs/wt2_ap4_run1/04_fourier/c90",
+      "sustained": "runs/wt2_ap4_run1/04_fourier/c90",
+      "hmm": "runs/wt2_ap4_run1/05_hmm",
+      "analysis": "runs/wt2_ap4_run1/06_analysis"
+    }
+  },
+  {
+    "id": "wt2_washout_run1",
+    "animal": "WT2",
+    "label": "Washout",
+    "files": {
+      "h5": "paper/wt2_washout_run1/2_Plexon_processed/2026-05-20T15-15-33wt2_Green=255_OD=4_washout(2.5)_2Hz_B-00068.h5",
+      "npz": "example_data/wt2_washout_run1/array_4d.npz",
+      "stims": "example_data/wt2_washout_run1/stims.json",
+      "spikes": "example_data/wt2_washout_run1/spikes.txt",
+      "synctones": "example_data/wt2_washout_run1/synctones.csv",
+      "bundle": "paper/wt2_washout_run1/final_analysis/bundle.npz"
+    },
+    "dirs": {
+      "data": "example_data/wt2_washout_run1"
+    },
+    "analysis_base": "paper/wt2_washout_run1/5_Processing_Fourier_classification",
+    "workspace": {
+      "root": "runs/wt2_washout_run1",
+      "stats": "runs/wt2_washout_run1/01_preprocessing/stats",
+      "raster": "runs/wt2_washout_run1/01_preprocessing/rasters",
+      "filtered": "runs/wt2_washout_run1/02_processing/filtered",
+      "labels": "runs/wt2_washout_run1/03_labels",
+      "fourier": "runs/wt2_washout_run1/04_fourier/c90",
+      "sustained": "runs/wt2_washout_run1/04_fourier/c90",
+      "hmm": "runs/wt2_washout_run1/05_hmm",
+      "analysis": "runs/wt2_washout_run1/06_analysis"
+    }
+  },
+  {
+    "id": "wt3_no_projection",
+    "animal": "WT3",
+    "label": "No projection",
+    "files": {
+      "h5": "paper/wt3_no_projection/2_Plexon_processed/2026-05-13T12-03-53wt3_Green=255_OD=4_2Hz_noProjection_B-00068.h5",
+      "npz": "example_data/wt3_no_projection/array_4d.npz",
+      "stims": "example_data/wt3_no_projection/stims.json",
+      "spikes": "example_data/wt3_no_projection/spikes.txt",
+      "synctones": "example_data/wt3_no_projection/synctones.csv",
+      "bundle": "paper/wt3_no_projection/final_analysis/bundle.npz"
+    },
+    "dirs": {
+      "data": "example_data/wt3_no_projection"
+    },
+    "analysis_base": "paper/wt3_no_projection/5_Processing_Fourier_classification",
+    "workspace": {
+      "root": "runs/wt3_no_projection",
+      "stats": "runs/wt3_no_projection/01_preprocessing/stats",
+      "raster": "runs/wt3_no_projection/01_preprocessing/rasters",
+      "filtered": "runs/wt3_no_projection/02_processing/filtered",
+      "labels": "runs/wt3_no_projection/03_labels",
+      "fourier": "runs/wt3_no_projection/04_fourier/c90",
+      "sustained": "runs/wt3_no_projection/04_fourier/c90",
+      "hmm": "runs/wt3_no_projection/05_hmm",
+      "analysis": "runs/wt3_no_projection/06_analysis"
+    }
+  },
+  {
+    "id": "rd1",
+    "animal": "RD1",
+    "label": "Run 1",
+    "files": {
+      "h5": "paper/rd1/2_Plexon_processed/2025-12-18T12-01-28rd1_Green=255_noFilter_2Hz_PRE_B-00068.h5",
+      "npz": "example_data/rd1/array_4d.npz",
+      "stims": "example_data/rd1/stims.json",
+      "spikes": "example_data/rd1/spikes.txt",
+      "synctones": "example_data/rd1/synctones.csv",
+      "bundle": "paper/rd1/final_analysis/bundle.npz"
+    },
+    "dirs": {
+      "data": "example_data/rd1"
+    },
+    "analysis_base": "paper/rd1/5_Processing_Fourier_classification",
+    "workspace": {
+      "root": "runs/rd1",
+      "stats": "runs/rd1/01_preprocessing/stats",
+      "raster": "runs/rd1/01_preprocessing/rasters",
+      "filtered": "runs/rd1/02_processing/filtered",
+      "labels": "runs/rd1/03_labels",
+      "fourier": "runs/rd1/04_fourier/c90",
+      "sustained": "runs/rd1/04_fourier/c90",
+      "hmm": "runs/rd1/05_hmm",
+      "analysis": "runs/rd1/06_analysis"
+    }
+  }
+]

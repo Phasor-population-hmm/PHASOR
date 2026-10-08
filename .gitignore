@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+.venv/
+build/
+*.egg-info/
+phasor_output/
+mode_project/data/
+mode_project/test/_phasor_*/
+phasor_hmm_results/
+node_modules/
+.next/
+*.npz
+!example_data/**/*.npz
+*.h5
+*.log
+.DS_Store

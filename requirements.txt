@@ -1,0 +1,10 @@
+numpy>=1.24,<2.0
+pandas>=1.5,<2.3
+scipy>=1.10,<1.13
+matplotlib>=3.7,<3.9
+scikit-learn>=1.3,<1.5
+umap-learn
+h5py
+networkx>=3.1,<3.3
+openpyxl>=3.1
+seaborn>=0.12,<0.14

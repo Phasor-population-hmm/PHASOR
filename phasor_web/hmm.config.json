@@ -1,0 +1,7 @@
+{
+  "project_dir": "mode_project",
+  "python": "",
+  "max_parallel_searches": 3,
+  "last_profile": "test/wt17_wash20",
+  "_help": "project_dir points to the HMM project root. python is the interpreter used for HMM jobs, left blank to use the pipeline's default. max_parallel_searches limits concurrent eta-alpha searches."
+}
