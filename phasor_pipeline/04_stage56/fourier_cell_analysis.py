@@ -530,7 +530,6 @@ def main():
         raise SystemExit(str(exc))
     analyzer.analyze()
     analyzer.plot_population()
-    analyzer.plot_profiles()
 
 
 if __name__ == "__main__":

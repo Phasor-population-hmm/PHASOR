@@ -113,7 +113,19 @@ SECTOR_BINS = [_sector_bins(i) for i in range(N_AGG_STATES)]
 def _find_stage6_csv(run_dir: Path, contrast: int) -> Path | None:
     """Locate Stage6 ST CSV across Filtered_Data naming variants."""
     run_dir = Path(run_dir)
+    layout_dir = Path(__file__).resolve().parent.parent / "04_stage56"
+    if str(layout_dir) not in sys.path:
+        sys.path.insert(0, str(layout_dir))
+    from condition_layout import contrast_dir, stage6_csv
+    try:
+        found = stage6_csv(contrast_dir(run_dir, contrast))
+    except FileNotFoundError:
+        found = None
+    if found is not None:
+        return found
     filtered_roots = [
+        run_dir / "02_processing" / "filtered",
+        run_dir / "04_fourier",
         run_dir / "Filtered_Data",
         run_dir / "Filtered Data",
         run_dir / "Filtered data",

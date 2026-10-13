@@ -17,7 +17,7 @@ import sys
 
 class RasterSequenceVisualizer:
 
-    def __init__(self, npz_file, stims_json, output_dir, n_sequences=10, stimulus_frames_dir=None):
+    def __init__(self, npz_file, stims_json, output_dir, n_sequences=-1, stimulus_frames_dir=None):
         self.npz_file = npz_file
         self.stims_json = stims_json
         self.output_dir = Path(output_dir)
@@ -561,8 +561,8 @@ def main():
                        help='JSON file with stimulus sequence')
     parser.add_argument('output_dir', type=str,
                        help='Output directory for visualizations')
-    parser.add_argument('--n_sequences', type=int, default=10,
-                       help='Number of sequences to plot (default: 10). Use -1 to run ALL available sequences.')
+    parser.add_argument('--n_sequences', type=int, default=-1,
+                       help='Number of sequences to plot. Default -1 writes every available sequence (15 for these recordings).')
     parser.add_argument('--sequence', type=int, default=0,
                        help='Plot exactly ONE sequence number (1-based). Overrides --n_sequences.')
     parser.add_argument('--stimulus_frames_dir', type=str, default=None,

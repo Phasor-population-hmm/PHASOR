@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { stageById } from "@/lib/stages";
 import { buildArgv, launch } from "@/lib/jobs";
 import { pipelinePython } from "@/lib/pythonPath";
+import { resultFolder, resultsPresent } from "@/lib/overwrite";
 
 export async function POST(request) {
   const body = await request.json();
@@ -11,6 +12,10 @@ export async function POST(request) {
   const values = body.values || {};
   const missing = stage.fields.filter((f) => f.required && !values[f.key]).map((f) => f.label);
   if (missing.length) return NextResponse.json({ error: "missing: " + missing.join(", ") }, { status: 400 });
+
+  if (resultsPresent(stage.id, values) && !body.overwrite) {
+    return NextResponse.json({ needsOverwrite: true, folder: resultFolder(stage.id, values) }, { status: 409 });
+  }
 
   const argv = buildArgv(stage, values, pipelinePython());
   try {

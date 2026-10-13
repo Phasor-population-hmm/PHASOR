@@ -37,12 +37,18 @@ class Job {
 }
 
 function baseEnv() {
+  const cache = path.join(OUTPUT_ROOT, ".cache");
+  fs.mkdirSync(path.join(cache, "matplotlib"), { recursive: true });
+  fs.mkdirSync(path.join(cache, "numba"), { recursive: true });
   return {
     ...process.env,
     PHASOR_OUTPUT_ROOT: OUTPUT_ROOT,
     PHASOR_VITERBI_BANDS: VITERBI_BANDS,
     PYTHONUNBUFFERED: "1",
     MPLBACKEND: "Agg",
+    XDG_CACHE_HOME: cache,
+    MPLCONFIGDIR: path.join(cache, "matplotlib"),
+    NUMBA_CACHE_DIR: path.join(cache, "numba"),
   };
 }
 

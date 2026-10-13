@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import importlib.util
 import os
+import sys
 from pathlib import Path
 
 import matplotlib
@@ -24,20 +25,16 @@ COLORS = {"All cells": "#222222", "ON": "#E69F00", "OFF": "#0072B2", "Biphasic":
 OUT = Path(os.environ.get("PHASOR_OUTPUT_ROOT", "phasor_output"))
 
 _ROOT = Path(__file__).resolve().parent.parent
+if str(_ROOT / "04_stage56") not in sys.path:
+    sys.path.insert(0, str(_ROOT / "04_stage56"))
+from condition_layout import contrast_dir, stage5_csv
 _gs = importlib.util.spec_from_file_location("gcp", _ROOT / "05_viterbi" / "generate_contrast_progression_png.py")
 gcp = importlib.util.module_from_spec(_gs)
 _gs.loader.exec_module(gcp)
 
 
 def cond_dir(root: Path, contrast: int) -> Path:
-    for candidate in (
-        root / "Filtered_Data" / f"c{contrast}",
-        root / "Filtered Data" / f"c{contrast}",
-        root / "clustering" / "filtered" / f"c{contrast}_f2Hz",
-    ):
-        if candidate.exists():
-            return candidate
-    raise FileNotFoundError(f"No c{contrast} folder under {root}")
+    return contrast_dir(root, contrast)
 
 
 def load_array(root: Path, contrast: int) -> np.ndarray:
@@ -56,8 +53,8 @@ def labels_for(root: Path) -> dict[tuple[int, int], str]:
             folder = cond_dir(root, contrast)
         except FileNotFoundError:
             continue
-        csv = folder / "Stage5_Cell_Fourier_Analysis" / "cell_fourier_results.csv"
-        if not csv.exists():
+        csv = stage5_csv(folder)
+        if csv is None:
             continue
         frame = pd.read_csv(csv)
         array = load_array(root, contrast)

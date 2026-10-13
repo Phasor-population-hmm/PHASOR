@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import PathField from "./PathField";
 import Console from "./Console";
-import RecordingSelect, { analysisFolderName, outputLabel, prepareRecording, useRecordingCatalog } from "./RecordingPicker";
+import RecordingSelect, { analysisFolderName, outputLabel, prepareRecording, readOtherInputs, rememberOtherInputs, useRecordingCatalog } from "./RecordingPicker";
 import { ensureFree } from "./JobDock";
 import { PLOTS } from "@/lib/stages";
 import { useJobPoll } from "@/hooks/useJobPoll";
@@ -17,6 +17,7 @@ export default function PlotsRunner() {
   const [rep, setRep] = useState(1);
   const [cycle, setCycle] = useState(3);
   const [error, setError] = useState("");
+  const [askOverwrite, setAskOverwrite] = useState(null);
   const [activeId, setActiveId] = useState("");
   const { lines, status, watch, reset } = useJobPoll();
   const { datasets, animals, choice, setChoice, dataset } = useRecordingCatalog();
@@ -24,15 +25,16 @@ export default function PlotsRunner() {
   useEffect(() => {
     if (!choice) return;
     if (choice === "other") {
-      setBundle("");
-      setOutput("");
-      setRunDir("");
+      const saved = readOtherInputs();
+      setBundle(saved.bundle || "");
+      setRunDir(saved.runDir || saved.workspaceRoot || saved.data || "");
+      setOutput(saved.analysisOut || (saved.workspaceRoot ? `${saved.workspaceRoot}/06_analysis` : ""));
       return;
     }
     if (!dataset) return;
     setBundle(dataset.files.bundle || "");
     setOutput(dataset.workspace.analysis || "");
-    setRunDir(dataset.analysis_base || "");
+    setRunDir(dataset.workspace.root || dataset.dirs.data || "");
   }, [choice, dataset]);
 
   function remember(nextBundle, nextOutput) {
@@ -48,8 +50,9 @@ export default function PlotsRunner() {
       .catch(() => {});
   }, [watch]);
 
-  async function run(chosenPlot) {
+  async function run(chosenPlot, overwrite = false) {
     setError("");
+    setAskOverwrite(null);
     if (!bundle) {
       setError("Choose a bundle.npz file.");
       return;
@@ -61,6 +64,7 @@ export default function PlotsRunner() {
     if (!(await ensureFree())) return;
     if (dataset) await prepareRecording(dataset.id);
     remember(bundle, output);
+    if (choice === "other") rememberOtherInputs({ bundle, runDir, analysisOut: output });
     const title = PLOTS.find((row) => row[0] === chosenPlot)?.[1];
     const folder = chosenPlot === "viterbi_polar_rep_cycle" ? `polar_rep${rep}_cycle${cycle}` : analysisFolderName(chosenPlot, title);
     const destination = `${output}/${folder}`;
@@ -68,14 +72,19 @@ export default function PlotsRunner() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        bundles: [{ bundle, run_dir: runDir || undefined, name: dataset?.id }],
+        bundles: [{ bundle, run_dir: runDir || undefined, name: dataset?.id || readOtherInputs().workspaceRoot?.split("/").pop() }],
         plot: chosenPlot,
         output: destination,
         rep,
         cycle,
+        overwrite,
       }),
     });
     const data = await res.json();
+    if (data.needsOverwrite) {
+      setAskOverwrite(chosenPlot);
+      return;
+    }
     if (data.busy) return;
     if (data.error) {
       setError(data.error);
@@ -105,11 +114,11 @@ export default function PlotsRunner() {
             Each analysis is saved under {outputLabel(dataset.workspace.analysis)}
           </div>
         )}
-        <PathField label="Bundle file" kind="file" filter=".npz" value={bundle} onChange={setBundle} placeholder="Choose bundle.npz" />
+        <PathField label="Bundle file" kind="file" filter=".npz" value={bundle} onChange={(value) => { setBundle(value); if (choice === "other") rememberOtherInputs({ bundle: value }); }} placeholder="Choose bundle.npz" />
         {choice === "other" && (
-          <PathField label="Stimulus data folder" kind="dir" value={runDir} onChange={setRunDir} placeholder="Folder that contains Filtered_Data" />
+          <PathField label="Stimulus data folder" kind="dir" value={runDir} onChange={(value) => { setRunDir(value); rememberOtherInputs({ runDir: value }); }} placeholder="Folder with 02_processing/filtered, or the recording folder" />
         )}
-        <PathField label="Results folder" kind="dir" value={output} onChange={setOutput} placeholder="Choose where to save results" />
+        <PathField label="Results folder" kind="dir" value={output} onChange={(value) => { setOutput(value); if (choice === "other") rememberOtherInputs({ analysisOut: value }); }} placeholder="Choose where to save results" />
 
         <div className="mb-3 rounded-xl border border-white/10 bg-white/[0.03] p-4">
           <div className="font-mono text-[11px] uppercase tracking-wide text-neutral-500">Repetition and cycle</div>
@@ -145,7 +154,7 @@ export default function PlotsRunner() {
             <button
               key={id}
               type="button"
-              onClick={() => run(id)}
+              onClick={() => run(id, false)}
               disabled={status === "running"}
               className="group overflow-hidden rounded-2xl border border-white/10 bg-neutral-950 text-left transition hover:-translate-y-0.5 hover:border-teal-400/50 disabled:opacity-50"
             >
@@ -164,6 +173,19 @@ export default function PlotsRunner() {
           ))}
         </div>
         <p className="text-xs text-neutral-500">Click a square to run it. Firing rate of cells is saved in firing_rate, not with any other figure.</p>
+        {askOverwrite && (
+          <div className="mt-4 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-sm text-amber-100">
+            <p>Results are already in this folder. Overwrite them?</p>
+            <div className="mt-3 flex gap-2">
+              <button type="button" onClick={() => run(askOverwrite, true)} className="rounded-md bg-amber-300 px-3 py-1.5 text-sm font-medium text-neutral-950">
+                Overwrite
+              </button>
+              <button type="button" onClick={() => setAskOverwrite(null)} className="rounded-md border border-white/15 px-3 py-1.5 text-sm text-neutral-200">
+                Keep them
+              </button>
+            </div>
+          </div>
+        )}
         {error && <div className="mt-4 rounded-md border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-300">{error}</div>}
       </div>
 

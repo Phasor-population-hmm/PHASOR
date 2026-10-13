@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Usage: python Processor.py spike_file.txt synctones_file.csv stims.json
+Usage: python Processor.py spike_file.txt synctones_file.csv stims.json [output_dir]
 """
 
 import numpy as np
@@ -10,7 +10,7 @@ import sys
 import os
 from pathlib import Path
 
-def generate_arrays(spike_file, synctones_file, stims_file):
+def generate_arrays(spike_file, synctones_file, stims_file, output_dir=None):
 
 
     with open(stims_file, 'r') as f:
@@ -170,30 +170,39 @@ def generate_arrays(spike_file, synctones_file, stims_file):
         'filter_criteria': ['Rest', 'final black', 'initial black']
     }
 
-    base_name = Path(spike_file).stem
-    array_file = f"{base_name}_4d.npz"
-    metadata_file = f"{base_name}_metadata.npz"
+    if output_dir:
+        out = Path(output_dir)
+        out.mkdir(parents=True, exist_ok=True)
+        array_file = out / "array_4d.npz"
+        metadata_file = out / "array_metadata.npz"
+    else:
+        base_name = Path(spike_file).stem
+        array_file = Path(f"{base_name}_4d.npz")
+        metadata_file = Path(f"{base_name}_metadata.npz")
 
     np.savez_compressed(array_file, array=spike_array)
     np.savez_compressed(metadata_file, **metadata)
+    print(array_file)
+    print(metadata_file)
 
 
     return spike_array, metadata
 
 def main():
-    if len(sys.argv) != 4:
+    if len(sys.argv) not in (4, 5):
         sys.exit(1)
 
     spike_file = sys.argv[1]
     synctones_file = sys.argv[2]
     stims_file = sys.argv[3]
+    output_dir = sys.argv[4] if len(sys.argv) == 5 else None
 
     for file_path in [spike_file, synctones_file, stims_file]:
         if not os.path.exists(file_path):
             sys.exit(1)
 
     try:
-        spike_array, metadata = generate_arrays(spike_file, synctones_file, stims_file)
+        spike_array, metadata = generate_arrays(spike_file, synctones_file, stims_file, output_dir)
     except Exception as e:
         raise
 

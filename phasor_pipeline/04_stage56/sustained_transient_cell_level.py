@@ -338,8 +338,6 @@ def analyze_condition(
 
         _plot_psth_all_cycles(out, X, out_dir, bin_ms, on_window_ms, off_window_ms)
 
-        _plot_individual_profiles(out, X, out_dir, bin_ms, on_window_ms, off_window_ms)
-
         mapping = out.groupby(["cluster_id", "polarity", "subtype"]).size().reset_index(name="n_cells")
         mapping.to_csv(out_dir / "cluster_to_subtype_counts.csv", index=False)
 

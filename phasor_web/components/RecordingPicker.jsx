@@ -28,14 +28,64 @@ export function withContrast(folder, contrast) {
   return /\/c\d+$/.test(folder) ? folder.replace(/\/c\d+$/, `/${contrast}`) : `${folder}/${contrast}`;
 }
 
+export const OTHER_KEY = "phasor-other-inputs";
+
+export function readOtherInputs() {
+  if (typeof window === "undefined") return {};
+  try {
+    return JSON.parse(localStorage.getItem(OTHER_KEY) || "{}");
+  } catch {
+    return {};
+  }
+}
+
+export function rememberOtherInputs(partial) {
+  const current = readOtherInputs();
+  const next = { ...current, ...partial };
+  if (partial.outputs) next.outputs = { ...(current.outputs || {}), ...partial.outputs };
+  localStorage.setItem(OTHER_KEY, JSON.stringify(next));
+  return next;
+}
+
+export function outputRootFromDatasets(datasets) {
+  const sample = (datasets || []).find((row) => row.workspace && row.workspace.root);
+  if (!sample) return "";
+  const marker = "/phasor_output/runs/";
+  const index = sample.workspace.root.indexOf(marker);
+  if (index < 0) return "";
+  return sample.workspace.root.slice(0, index + "/phasor_output".length);
+}
+
+export function valuesForOther(stage, saved, contrast = "c90") {
+  const root = saved.workspaceRoot || "";
+  const outputs = saved.outputs || {};
+  const next = {};
+  for (const field of stage.fields) {
+    if (field.key === "out") {
+      if (outputs[stage.id]) next.out = outputs[stage.id];
+      else if (root && stage.id === "processor") next.out = `${root}/01_preprocessing`;
+      else if (root && stage.id === "stats") next.out = `${root}/01_preprocessing/stats`;
+      else if (root && stage.id === "raster") next.out = `${root}/01_preprocessing/rasters`;
+      else if (root && stage.id === "filter") next.out = `${root}/02_processing/filtered`;
+      else next.out = "";
+    } else if (field.key === "data" && stage.id === "filter") next.data = saved.data || "";
+    else if (field.key === "data") next.data = saved.filtered || (root ? `${root}/02_processing/filtered` : "");
+    else if (field.key === "run") next.run = root ? `${root}/03_labels` : "";
+    else if (field.key === "cond") next.cond = root ? `${root}/04_fourier/${contrast}` : "";
+    else next[field.key] = saved[field.key] || "";
+  }
+  return next;
+}
+
 export function valuesForStage(stage, dataset, contrast = "c90") {
   const workspace = dataset.workspace || {};
   const files = dataset.files || {};
   const dirs = dataset.dirs || {};
-  const outputKey = { stats: "stats", raster: "raster", filter: "filtered" }[stage.id];
+  const outputKey = { processor: "root", stats: "stats", raster: "raster", filter: "filtered" }[stage.id];
   const next = {};
   for (const field of stage.fields) {
-    if (field.key === "out") next.out = workspace[outputKey] || "";
+    if (field.key === "out" && stage.id === "processor") next.out = workspace.root ? `${workspace.root}/01_preprocessing` : "";
+    else if (field.key === "out") next.out = workspace[outputKey] || "";
     else if (field.key === "data" && stage.id === "filter") next.data = dirs.data || "";
     else if (field.key === "data") next.data = workspace.filtered || "";
     else if (field.key === "run") next.run = workspace.labels || "";

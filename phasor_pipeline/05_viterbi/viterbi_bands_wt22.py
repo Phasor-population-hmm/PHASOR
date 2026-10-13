@@ -2,6 +2,7 @@ import argparse
 import html
 import json
 import math
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Sequence, Tuple
@@ -249,9 +250,20 @@ def first_existing_path(candidates):
     return None
 
 
+def _condition_layout():
+    folder = Path(__file__).resolve().parent.parent / "04_stage56"
+    if str(folder) not in sys.path:
+        sys.path.insert(0, str(folder))
+    import condition_layout
+    return condition_layout
+
+
 def resolve_condition_dir(base_dir, condition_name, freq_hz):
     """
     Support multiple on-disk layouts.
+
+    PHASOR website:
+      <base>/02_processing/filtered/c0/...
 
     Layout A (WT22 style):
       <base>/Filtered_Data/c50/...
@@ -261,6 +273,10 @@ def resolve_condition_dir(base_dir, condition_name, freq_hz):
     """
     base_dir = Path(base_dir)
     cond_num = "".join(ch for ch in str(condition_name) if ch.isdigit())
+    try:
+        return _condition_layout().contrast_dir(base_dir, cond_num or condition_name)
+    except FileNotFoundError:
+        pass
     filtered_roots = [
         base_dir / "Filtered_Data",
         base_dir / "Filtered Data",
@@ -370,7 +386,9 @@ def load_condition_data(base_dir, condition_name, freq_hz, target_universe_size=
     valid_flat_mask = np.any(raw_flat > 0, axis=(0, 1))
     valid_flat_indices = np.flatnonzero(valid_flat_mask)
 
-    label_map_path = Path(base_dir) / "label_index_maps" / f"{condition_name}_txtcells_label_index_map.csv"
+    label_map_path = _condition_layout().label_map_csv(base_dir, condition_name)
+    if label_map_path is None:
+        label_map_path = Path(base_dir) / "label_index_maps" / f"{condition_name}_txtcells_label_index_map.csv"
     label_map = safe_read_csv(label_map_path)
     kept_to_flat = {}
     flat_to_kept: Dict[int, int] = {}
@@ -383,7 +401,9 @@ def load_condition_data(base_dir, condition_name, freq_hz, target_universe_size=
             kept_to_flat[ki] = fi
             flat_to_kept[fi] = ki
 
-    stage5_path = condition_dir / "Stage5_Cell_Fourier_Analysis" / "cell_fourier_results.csv"
+    stage5_path = _condition_layout().stage5_csv(condition_dir)
+    if stage5_path is None:
+        stage5_path = condition_dir / "Stage5_Cell_Fourier_Analysis" / "cell_fourier_results.csv"
     fourier_df = safe_read_csv(stage5_path)
     flat_to_fourier: Dict[int, str] = {}
     if not fourier_df.empty:
@@ -394,13 +414,15 @@ def load_condition_data(base_dir, condition_name, freq_hz, target_universe_size=
                 flat_to_fourier[flat_idx] = label
 
     stage6_dir = condition_dir / "Stage6_Cell_SustainedTransient"
-    stage6_csv = first_existing_path(
-        [
-            stage6_dir / "cell_level_sustained_transient_KEPT.csv",
-            stage6_dir / "cell_level_sustained_transient.csv",
-            stage6_dir / "cell_level_sustained_transient_ALL.csv",
-        ]
-    )
+    stage6_csv = _condition_layout().stage6_csv(condition_dir)
+    if stage6_csv is None:
+        stage6_csv = first_existing_path(
+            [
+                stage6_dir / "cell_level_sustained_transient_KEPT.csv",
+                stage6_dir / "cell_level_sustained_transient.csv",
+                stage6_dir / "cell_level_sustained_transient_ALL.csv",
+            ]
+        )
     subtype_df = safe_read_csv(stage6_csv)
     flat_to_subtype: Dict[int, str] = {}
     subtype_available = False

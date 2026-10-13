@@ -5,6 +5,7 @@ import { PLOTS } from "@/lib/stages";
 import { PIPELINE, OUTPUT_ROOT } from "@/lib/paths";
 import { launch } from "@/lib/jobs";
 import { pipelinePython } from "@/lib/pythonPath";
+import { plotResultsPresent } from "@/lib/overwrite";
 
 const PLOT_IDS = new Set(PLOTS.map((row) => row[0]));
 
@@ -40,6 +41,10 @@ export async function POST(request) {
       return NextResponse.json({ error: `run directory not found: ${runDir}` }, { status: 400 });
     }
     datasets.push({ name, bundle: bundlePath, run_dir: runDir });
+  }
+
+  if (plotResultsPresent(outputDir) && !body.overwrite) {
+    return NextResponse.json({ needsOverwrite: true, folder: outputDir }, { status: 409 });
   }
 
   fs.mkdirSync(outputDir, { recursive: true });

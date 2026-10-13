@@ -107,6 +107,8 @@ def _fourier_csv(run_dir: Path, contrast: int) -> Optional[Path]:
       - Filtered_Data/C-50/Stage5_Cell_Fourier_Analysis/              (wt7)
     """
     candidates = [
+        run_dir / f"02_processing/filtered/c{contrast}/Stage5_Cell_Fourier_Analysis/cell_fourier_results.csv",
+        run_dir / f"04_fourier/c{contrast}/Stage5_Cell_Fourier_Analysis/cell_fourier_results.csv",
         run_dir / f"clustering/filtered/c{contrast}_f2Hz/Stage5_Cell_Fourier_Analysis/cell_fourier_results.csv",
         run_dir / f"Filtered_Data/c{contrast}/Stage5_Cell_Fourier_Analysis/cell_fourier_results.csv",
         run_dir / f"Filtered_Data/C-{contrast}/Stage5_Cell_Fourier_Analysis/cell_fourier_results.csv",
@@ -123,8 +125,15 @@ def _fourier_csv(run_dir: Path, contrast: int) -> Optional[Path]:
 
 
 def _lmap_csv(run_dir: Path, contrast: int) -> Optional[Path]:
-    p = run_dir / f"label_index_maps/c{contrast}_txtcells_label_index_map.csv"
-    return p if p.exists() else None
+    names = (
+        run_dir / f"label_index_maps/c{contrast}_txtcells_label_index_map.csv",
+        run_dir / f"03_labels/label_index_maps/c{contrast}_txtcells_label_index_map.csv",
+        run_dir / f"03_labels/c{contrast}_txtcells_label_index_map.csv",
+    )
+    for path in names:
+        if path.exists():
+            return path
+    return None
 
 
 def channel_counts_per_subtype(

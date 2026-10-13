@@ -12,11 +12,12 @@ export const STAGES = [
     title: "Processor → 4D array",
     phase: "Pre-processing",
     script: "01_preprocessing/Processor.py",
-    template: "{python} {script} {spikes} {synctones} {stims}",
+    template: "{python} {script} {spikes} {synctones} {stims} {out}",
     fields: [
       { key: "spikes", label: "Spike file (.txt)", kind: "file", required: true, filter: ".txt" },
       { key: "synctones", label: "Synctones (.csv)", kind: "file", required: true, filter: ".csv" },
       { key: "stims", label: "Stimulus JSON", kind: "file", required: true, filter: ".json" },
+      { key: "out", label: "Output folder", kind: "dir", required: true },
     ],
   },
   {
@@ -78,7 +79,7 @@ export const STAGES = [
     phase: "Fourier classification",
     script: "04_stage56/fourier_cell_analysis.py",
     template: "{python} {script} {cond}",
-    fields: [{ key: "cond", label: "Condition folder (c50 … c90)", kind: "dir", required: true }],
+    fields: [{ key: "cond", label: "Condition folder (c0 … c90)", kind: "dir", required: true }],
   },
   {
     id: "sustained_transient",
@@ -86,7 +87,7 @@ export const STAGES = [
     phase: "Fourier classification",
     script: "04_stage56/sustained_transient_cell_level.py",
     template: "{python} {script} {cond}",
-    fields: [{ key: "cond", label: "Condition folder (c50 … c90)", kind: "dir", required: true }],
+    fields: [{ key: "cond", label: "Condition folder (c0 … c90)", kind: "dir", required: true }],
   },
   {
     id: "hmm",
