@@ -112,7 +112,7 @@ export default function HmmRunner() {
         return;
       }
       if (j.status?.status === "failed") {
-        out.push("", "HMM workflow failed. Check the search, refit, and analysis logs in the workspace.");
+        out.push("", "The fit stopped. The console above has the error.");
         setLines(out);
         setStatus("failed");
         clearInterval(pollRef.current);
@@ -179,13 +179,9 @@ export default function HmmRunner() {
       return;
     }
     setLines([
-      "HMM started on this computer, in a terminal process.",
+      "HMM started on the selected recording.",
       "It uses " + (r.cores || 3) + " cores.",
-      "  pid       " + r.pid,
-      "  log       " + r.log,
       "  results   " + dataDir,
-      "",
-      "You can leave this page. The run continues in the terminal.",
     ]);
     setStatus("running");
     setStep("search");
@@ -200,8 +196,9 @@ export default function HmmRunner() {
         <div>
           <h1 className="text-3xl font-semibold tracking-tight text-neutral-50">Hidden Markov Model</h1>
           <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-neutral-400">
-            Chow–Liu tree emissions with a covariance soft-threshold. Search uses η ∈ {"{"}0.0005, 0.002, 0.005{"}"} at
-            α = 0.5, then refits K ∈ {"{"}3, 6, 9, 12, 15{"}"} and decodes with Viterbi. A valid bundle.npz skips fitting.
+            Fits a population hidden Markov model to the selected spike file, synctone times, and stimulus file.
+            The search uses a covariance soft-threshold at η of 0.0005, 0.002, and 0.005, with α = 0.5, then refits
+            and decodes the latent state. An existing bundle.npz is reused.
           </p>
         </div>
         <StateGraph className="hidden h-[150px] w-full text-neutral-600 lg:block" />
@@ -213,12 +210,12 @@ export default function HmmRunner() {
           datasets={datasets}
           animals={animals}
           onChange={setChoice}
-          hint="Preloaded recordings fill the spike, synctone, and stimulus files. Other files means you browse them yourself."
+          hint="A listed recording fills the spike, synctone, and stimulus files."
         />
         {dataset?.files?.bundle && (
           <div className="mb-5 rounded-xl border border-teal-500/20 bg-teal-500/[0.06] px-4 py-3">
             <div className="text-sm font-medium text-teal-200">HMM results are already available for this recording</div>
-            <p className="mt-1 text-sm text-neutral-400">Existing results are loaded for this recording. A new fit is saved in {outputLabel(dataset.workspace.hmm)}.</p>
+            <p className="mt-1 text-sm text-neutral-400">A new fit is saved in {outputLabel(dataset.workspace.hmm)}.</p>
             <button type="button" onClick={useExisting} className="mt-3 rounded-md border border-teal-500/30 px-3 py-1.5 text-sm text-teal-100">
               Use existing results
             </button>
@@ -226,7 +223,7 @@ export default function HmmRunner() {
         )}
         {choice === "other" && (
           <div className="mb-5 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-neutral-400">
-            Browse the dataset folder and the three input files, then start the fit.
+            Choose the dataset folder and the three input files, then start the fit.
           </div>
         )}
         <PathField label="HMM output folder" kind="dir" value={dataDir} onChange={setDataDir} />
@@ -251,7 +248,7 @@ export default function HmmRunner() {
           ) : (
             <>
               <div className="rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-100">
-                This runs on this computer, in a terminal process. It needs 3 cores.
+                The fit runs on this computer and uses 3 cores. Progress is shown in the console below.
               </div>
               <div className="mt-4 grid grid-cols-2 gap-4">
                 <div>
@@ -268,8 +265,7 @@ export default function HmmRunner() {
                 </div>
               </div>
               <p className="mt-4 text-[13px] text-neutral-500">
-                Three η searches run in parallel, then the selected model is refit and decoded. Finished search tables
-                are reused if the run is interrupted.
+                The three η searches run together, then the selected model is refit and decoded.
               </p>
             </>
           )}

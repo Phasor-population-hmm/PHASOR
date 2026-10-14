@@ -4,8 +4,12 @@ export const STAGES = [
     title: "Locate synctones",
     phase: "Pre-processing",
     script: "01_preprocessing/mcs-data-tools/locate_synctones.py",
-    template: "{python} {script} {h5}",
-    fields: [{ key: "h5", label: "MEA recording (.h5)", kind: "file", required: true, filter: ".h5" }],
+    template: "{python} {script} {h5} --out {out}",
+    fields: [
+      { key: "h5", label: "MEA recording (.h5)", kind: "file", required: true, filter: ".h5" },
+      { key: "out", label: "Output folder", kind: "dir", required: true },
+    ],
+    note: "Reads the analog sync channel and writes synctones.csv. Later steps use these times to align spikes with each stimulus.",
   },
   {
     id: "processor",
@@ -19,6 +23,7 @@ export const STAGES = [
       { key: "stims", label: "Stimulus JSON", kind: "file", required: true, filter: ".json" },
       { key: "out", label: "Output folder", kind: "dir", required: true },
     ],
+    note: "Builds the 4D spike array from spike times, synctone times, and the stimulus file, so every trial shares one time base.",
   },
   {
     id: "stats",
@@ -32,6 +37,7 @@ export const STAGES = [
       { key: "spikes", label: "Spike file (.txt)", kind: "file", required: true, filter: ".txt" },
       { key: "out", label: "Output folder", kind: "dir", required: true },
     ],
+    note: "Summarizes how many cells fire, and how strongly, across this recording.",
   },
   {
     id: "raster",
@@ -44,6 +50,7 @@ export const STAGES = [
       { key: "stims", label: "Stimulus JSON", kind: "file", required: true, filter: ".json" },
       { key: "out", label: "Output folder", kind: "dir", required: true },
     ],
+    note: "Draws spike rasters for every stimulus sequence so the trial structure can be checked.",
   },
   {
     id: "filter",
@@ -56,6 +63,7 @@ export const STAGES = [
       { key: "stims", label: "Stimulus JSON", kind: "file", required: true, filter: ".json" },
       { key: "out", label: "Output folder", kind: "dir", required: true },
     ],
+    note: "Splits the recording into one folder per contrast so each contrast is analyzed on its own.",
   },
   {
     id: "cluster",
@@ -64,6 +72,7 @@ export const STAGES = [
     script: "03_clustering/automated_pipeline_clean.py",
     template: "{python} {script} --data_dir {data}",
     fields: [{ key: "data", label: "Filtered dataset folder", kind: "dir", required: true }],
+    note: "Groups cells that share a response shape at each contrast.",
   },
   {
     id: "label_map",
@@ -72,6 +81,7 @@ export const STAGES = [
     script: "04_stage56/generate_label_index_map_csv.py",
     template: "{python} {script} {run}",
     fields: [{ key: "run", label: "Run directory", kind: "dir", required: true }],
+    note: "Links each clustered cell to its index in the spike file, so later labels stay attached to the same cell.",
   },
   {
     id: "fourier",
@@ -80,6 +90,7 @@ export const STAGES = [
     script: "04_stage56/fourier_cell_analysis.py",
     template: "{python} {script} {cond}",
     fields: [{ key: "cond", label: "Condition folder (c0 … c90)", kind: "dir", required: true }],
+    note: "Classifies each cell as ON, OFF, or biphasic from the phase of its response to the sine stimulus.",
   },
   {
     id: "sustained_transient",
@@ -88,6 +99,7 @@ export const STAGES = [
     script: "04_stage56/sustained_transient_cell_level.py",
     template: "{python} {script} {cond}",
     fields: [{ key: "cond", label: "Condition folder (c0 … c90)", kind: "dir", required: true }],
+    note: "Splits ON and OFF cells into sustained or transient from how long the response lasts within the stimulus cycle.",
   },
   {
     id: "hmm",
@@ -96,11 +108,21 @@ export const STAGES = [
     script: "",
     template: "",
     fields: [{ key: "data", label: "Dataset folder and HMM output location", kind: "dir", required: true }],
-    note:
-      "Covariance soft-threshold search (η = 0.0005, 0.002, 0.005; α = 0.5), then refit and Viterbi. " +
-      "A valid bundle.npz skips fitting.",
+    note: "Fits a population hidden Markov model with a covariance soft-threshold, then decodes the latent state on every trial. An existing bundle.npz is reused.",
   },
 ];
+
+export const PLOT_NOTES = {
+  firing_rate_vs_contrast: "Mean firing rate across contrast, for all cells and for ON, OFF, and biphasic cells.",
+  viterbi_cycle_subtype_phase_activity: "Where ON, OFF, and biphasic cells fire across the stimulus cycle.",
+  viterbi_mea_subtype_heatmaps: "Where each subtype sits on the array.",
+  viterbi_polar_sustained_transient: "How many sustained and transient cells are active in each phase of the cycle.",
+  viterbi_polar_rep_cycle: "The same phase plot for one repetition and one cycle.",
+  viterbi_polar_12states_pizza: "Active ON, OFF, and biphasic cells in twelve equal phase bins.",
+  dominant_modes_analysis: "How many decoded modes are dominated by ON, OFF, or biphasic cells at each contrast.",
+  mode_summary_plots: "How long modes last, and how many modes appear, across contrast.",
+  interactive_viterbi_html: "Step through the decoded state sequence for this recording.",
+};
 
 export const PLOTS = [
   ["firing_rate_vs_contrast", "Firing rate of cells", "/covers/firing_rate.jpg"],

@@ -21,7 +21,7 @@ export default function HomeBoard() {
         <div>
           <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-teal-400">Choose a recording</div>
           <p className="mt-1 max-w-xl text-sm text-neutral-500">
-            Pick WT1, WT2, WT3, or RD1 and every page loads that recording. Other files clears the preloaded paths so you can browse a different dataset.
+            Choose a recording. Every page uses that recording.
           </p>
         </div>
       </div>
@@ -69,7 +69,7 @@ export default function HomeBoard() {
           choice === "other" ? "border-teal-500/40 bg-teal-500/10 text-teal-100" : "border-white/[0.07] text-neutral-400 hover:border-white/15"
         }`}
       >
-        Other files. Browse a dataset that is not preloaded.
+        Other files
       </button>
 
       {dataset && (

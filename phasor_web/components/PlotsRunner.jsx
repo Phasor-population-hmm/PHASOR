@@ -5,7 +5,7 @@ import PathField from "./PathField";
 import Console from "./Console";
 import RecordingSelect, { analysisFolderName, outputLabel, prepareRecording, readOtherInputs, rememberOtherInputs, useRecordingCatalog } from "./RecordingPicker";
 import { ensureFree } from "./JobDock";
-import { PLOTS } from "@/lib/stages";
+import { PLOT_NOTES, PLOTS } from "@/lib/stages";
 import { useJobPoll } from "@/hooks/useJobPoll";
 
 const MEMORY = "phasor-analysis-files";
@@ -20,6 +20,7 @@ export default function PlotsRunner() {
   const [askOverwrite, setAskOverwrite] = useState(null);
   const [activeId, setActiveId] = useState("");
   const { lines, status, watch, reset } = useJobPoll();
+  const [jobId, setJobId] = useState("");
   const { datasets, animals, choice, setChoice, dataset } = useRecordingCatalog();
 
   useEffect(() => {
@@ -45,7 +46,10 @@ export default function PlotsRunner() {
     fetch("/api/session")
       .then((res) => res.json())
       .then((session) => {
-        if (session.status === "running" && session.kind === "job" && session.href === "/plots" && session.id) watch(session.id);
+        if (session.status === "running" && session.kind === "job" && session.href === "/plots" && session.id) {
+          setJobId(session.id);
+          watch(session.id);
+        }
       })
       .catch(() => {});
   }, [watch]);
@@ -91,14 +95,20 @@ export default function PlotsRunner() {
       return;
     }
     setActiveId(chosenPlot);
+    setJobId(data.job);
     watch(data.job);
+  }
+
+  async function terminate() {
+    if (!jobId) return;
+    await fetch(`/api/job/${jobId}`, { method: "POST" });
   }
 
   return (
     <div className="animate-rise">
       <h1 className="text-3xl font-semibold tracking-tight text-neutral-50">Post-HMM plots & analysis</h1>
       <p className="mt-3 max-w-2xl text-[15px] text-neutral-400">
-        Starts with the firing-rate plots, then the polar figures. Each square runs that analysis and saves it in its own folder.
+        Each analysis reads the decoded model and writes its figures in a separate folder.
       </p>
 
       <div className="mt-8 max-w-5xl">
@@ -107,7 +117,7 @@ export default function PlotsRunner() {
           datasets={datasets}
           animals={animals}
           onChange={setChoice}
-          hint="A preloaded recording fills the bundle and the results folder. Other files means you choose both yourself."
+          hint="A listed recording fills the bundle and the results folder."
         />
         {dataset && (
           <div className="mb-5 rounded-xl border border-teal-500/20 bg-teal-500/[0.06] px-4 py-3 text-sm text-neutral-300">
@@ -122,7 +132,7 @@ export default function PlotsRunner() {
 
         <div className="mb-3 rounded-xl border border-white/10 bg-white/[0.03] p-4">
           <div className="font-mono text-[11px] uppercase tracking-wide text-neutral-500">Repetition and cycle</div>
-          <p className="mt-1 text-sm text-neutral-400">Used by Polar by repetition and cycle. Other analyses ignore these.</p>
+          <p className="mt-1 text-sm text-neutral-400">Polar by repetition and cycle uses these. The other analyses do not.</p>
           <div className="mt-3 flex flex-wrap gap-4">
             <label className="text-sm text-neutral-300">
               Rep
@@ -144,9 +154,12 @@ export default function PlotsRunner() {
         </div>
 
         {status === "running" && (
-          <div className="mb-3 flex items-center gap-2 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm text-amber-100">
+          <div className="mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm text-amber-100">
             <span className="h-2 w-2 animate-pulse rounded-full bg-amber-300" />
             {PLOTS.find((row) => row[0] === activeId)?.[1] || "This analysis"} is running.
+            <button type="button" onClick={terminate} className="ml-auto rounded-md bg-rose-500 px-3 py-1.5 text-sm font-medium text-white">
+              Terminate
+            </button>
           </div>
         )}
         <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -165,14 +178,15 @@ export default function PlotsRunner() {
                     Running
                   </span>
                 )}
-                <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-3 text-[14px] font-medium leading-snug text-white">
-                  {title}
+                <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/70 to-transparent p-3 text-white">
+                  <span className="block text-[14px] font-medium leading-snug">{title}</span>
+                  <span className="mt-1 block text-[11px] leading-snug text-neutral-200">{PLOT_NOTES[id]}</span>
                 </span>
               </span>
             </button>
           ))}
         </div>
-        <p className="text-xs text-neutral-500">Click a square to run it. Firing rate of cells is saved in firing_rate, not with any other figure.</p>
+        <p className="text-xs text-neutral-500">Select a square to run that analysis.</p>
         {askOverwrite && (
           <div className="mt-4 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-sm text-amber-100">
             <p>Results are already in this folder. Overwrite them?</p>

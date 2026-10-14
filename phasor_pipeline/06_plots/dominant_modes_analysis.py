@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Classify Viterbi modes and write one workbook into PHASOR_OUTPUT_ROOT."""
+"""Classify Viterbi modes and plot class proportions into PHASOR_OUTPUT_ROOT."""
 
 from __future__ import annotations
 
@@ -347,20 +347,55 @@ def write_excel(
     format_workbook(path)
 
 
+def plot_proportions(summary_df: pd.DataFrame, out_dir: Path) -> None:
+    colors = {
+        "ON-dominated": "#E69F00",
+        "OFF-dominated": "#0072B2",
+        "Biphasic-dominated": "#009E73",
+        "Balanced": "#999999",
+    }
+    fig, ax = plt.subplots(figsize=(8.2, 5.2))
+    for class_name in CLASSES:
+        key = class_name.replace("-", "_").replace(" ", "_") + "_proportion"
+        ordered = summary_df.set_index("contrast").reindex(CONTRASTS)
+        ax.plot(
+            CONTRASTS,
+            ordered[key].to_numpy(dtype=float),
+            marker="o",
+            linewidth=2.4,
+            markersize=7,
+            color=colors[class_name],
+            label=class_name,
+        )
+    ax.set_xticks(CONTRASTS, [f"C{c}" for c in CONTRASTS])
+    ax.set_ylim(-0.05, 1.05)
+    ax.set_xlabel("Contrast")
+    ax.set_ylabel("Proportion of modes")
+    ax.set_title("Dominant mode classes")
+    ax.grid(axis="y", alpha=0.3)
+    ax.legend(frameon=False, loc="center left", bbox_to_anchor=(1.02, 0.5))
+    fig.tight_layout()
+    fig.savefig(out_dir / "dominant_mode_proportions.png", dpi=200, bbox_inches="tight", facecolor="white")
+    plt.close(fig)
+
+
 def main() -> None:
-    """Write one workbook into the analysis folder for the selected recording."""
+    """Plot dominant-mode class proportions for the selected recording."""
     out = _OUT_ROOT
     out.mkdir(parents=True, exist_ok=True)
     datasets = list(registry.DATASETS)
     if not datasets:
         raise SystemExit("No dataset was selected.")
+    frames = []
     for ds in datasets:
         name = ds["name"]
         print(f"\n===== {name} =====", flush=True)
-        detail_df, summary_df = analyze_dataset(ds, "")
-        path = out / f"{name}_dominant_modes.xlsx"
-        write_excel(path, detail_df, summary_df)
-        print(f"saved {path.name}", flush=True)
+        _detail_df, summary_df = analyze_dataset(ds, "")
+        frames.append(summary_df)
+        print(f"classified {name}", flush=True)
+    summary_all = pd.concat(frames, ignore_index=True)
+    plot_proportions(summary_all, out)
+    print("saved dominant_mode_proportions.png", flush=True)
 
 
 if __name__ == "__main__":

@@ -54,12 +54,16 @@ export default function JobDock() {
   }
 
   async function terminate() {
-    if (!session || session.kind !== "hmm") return;
-    await fetch("/api/hmm", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "stop", data: session.data }),
-    });
+    if (!session) return;
+    if (session.kind === "hmm") {
+      await fetch("/api/hmm", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "stop", data: session.data }),
+      });
+      return;
+    }
+    if (session.id) await fetch(`/api/job/${session.id}`, { method: "POST" });
   }
 
   return (
@@ -74,11 +78,9 @@ export default function JobDock() {
             <Link href={session.href || "/"} className="rounded-md border border-white/15 px-3 py-1.5 text-sm text-neutral-100">
               Open
             </Link>
-            {session.kind === "hmm" && (
-              <button type="button" onClick={terminate} className="rounded-md bg-rose-500 px-3 py-1.5 text-sm font-medium text-white">
-                Terminate
-              </button>
-            )}
+            <button type="button" onClick={terminate} className="rounded-md bg-rose-500 px-3 py-1.5 text-sm font-medium text-white">
+              Terminate
+            </button>
           </div>
         </div>
       )}
@@ -86,7 +88,7 @@ export default function JobDock() {
       {busy && (
         <Modal
           title="Already one job or operation in process"
-          body={`${busy.label || "A job"} is still running. Wait for it to finish, or terminate the Hidden Markov Model run if that is the one in progress.`}
+          body={`${busy.label || "A job"} is still running. Use Terminate to stop it.`}
           onClose={() => setBusy(null)}
         />
       )}

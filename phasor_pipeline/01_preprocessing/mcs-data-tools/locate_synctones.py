@@ -120,6 +120,7 @@ def locate_synctones(file_path, do_plot=False):
 def main():
     parser = argparse.ArgumentParser(description="Process a single HDF5 (.h5) file.")
     parser.add_argument("filename", type=valid_filename, help="Path to the .h5 file")
+    parser.add_argument("--out", default="", help="Folder for synctones.csv")
     parser.add_argument("-p", "--plot", action="store_true", help="Plot start of data")
 
     args = parser.parse_args()
@@ -129,17 +130,19 @@ def main():
 
     synctone_timestamps = locate_synctones(args.filename, args.plot)
 
-    base_filename = os.path.splitext(args.filename)[0]
-    csv_filename = f"{base_filename}_synctones.csv"
+    if args.out:
+        os.makedirs(args.out, exist_ok=True)
+        csv_filename = os.path.join(args.out, "synctones.csv")
+    else:
+        base_filename = os.path.splitext(args.filename)[0]
+        csv_filename = f"{base_filename}_synctones.csv"
     with open(csv_filename, "w", newline="") as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(["Synctone Timestamp (s)"])
         for sync in synctone_timestamps:
             writer.writerow([sync])
+    print(f"Saved {len(synctone_timestamps)} synctones to {csv_filename}", flush=True)
 
 
 if __name__ == "__main__":
-    try:
-        main()
-    except Exception as e:
-        pass
+    main()

@@ -11,15 +11,15 @@ import { useJobPoll } from "@/hooks/useJobPoll";
 import { STAGES } from "@/lib/stages";
 
 const STAGE_HINT = {
-  locate_synctones: "The .h5 for this recording is already filled in.",
-  stats: "The dashboard is saved in 01_preprocessing/stats.",
-  raster: "Raster plots are saved in 01_preprocessing/rasters.",
-  filter: "Writes one folder per contrast (c0, c50, c60, c70, c80, c90) at 2 Hz. Contrasts are not mixed into one file.",
-  cluster: "Clusters each contrast folder in this directory. Run Filter by contrast first.",
-  label_map: "Reads the recording array and the clustered contrast folders, then writes the maps here.",
+  locate_synctones: "synctones.csv is saved in 01_preprocessing.",
+  stats: "Saved in 01_preprocessing/stats.",
+  raster: "Saved in 01_preprocessing/rasters.",
+  filter: "Writes c0, c50, c60, c70, c80, and c90.",
+  cluster: "Run Filter by contrast first.",
+  label_map: "Maps are saved in 03_labels.",
   processor: "array_4d.npz and array_metadata.npz are saved in 01_preprocessing.",
-  fourier: "Pick a contrast, including C 0 %. That contrast must already be clustered in the filtered folder. Individual cell profiles are not saved.",
-  sustained_transient: "Uses the same contrast as Fourier classification, including C 0 %. Individual cell profiles are not saved.",
+  fourier: "Choose a contrast, including C 0 %. That contrast must already be clustered.",
+  sustained_transient: "Choose a contrast, including C 0 %. That contrast must already be clustered.",
 };
 
 export default function StageRunner({ stage }) {
@@ -31,6 +31,7 @@ export default function StageRunner({ stage }) {
   const [askOverwrite, setAskOverwrite] = useState(false);
   const { datasets, animals, choice, setChoice, dataset } = useRecordingCatalog();
   const { lines, status, watch, reset } = useJobPoll();
+  const [jobId, setJobId] = useState("");
 
   useEffect(() => {
     const raw = localStorage.getItem(memoryKey);
@@ -47,6 +48,7 @@ export default function StageRunner({ stage }) {
       .then((res) => res.json())
       .then((session) => {
         if (session.status === "running" && session.kind === "job" && session.stage === stage.id && session.id) {
+          setJobId(session.id);
           watch(session.id);
         }
       })
@@ -79,6 +81,7 @@ export default function StageRunner({ stage }) {
       if (key !== "h5") patch.data = parent;
     }
     if (stage.id === "processor" && key === "out" && value) patch.npz = `${value.replace(/\/$/, "")}/array_4d.npz`;
+    if (stage.id === "locate_synctones" && key === "out" && value) patch.synctones = `${value.replace(/\/$/, "")}/synctones.csv`;
     if (key === "data" && stage.id === "filter") patch.data = value;
     rememberOtherInputs(patch);
   }
@@ -112,7 +115,13 @@ export default function StageRunner({ stage }) {
       setError(data.error);
       return;
     }
+    setJobId(data.job);
     watch(data.job);
+  }
+
+  async function terminate() {
+    if (!jobId) return;
+    await fetch(`/api/job/${jobId}`, { method: "POST" });
   }
 
   return (
@@ -165,7 +174,7 @@ export default function StageRunner({ stage }) {
         )}
         {choice === "other" && (
           <div className="mb-5 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-neutral-400">
-            Files you choose here are filled in on the next steps. Change any field when that step needs a different file.
+            Files chosen here stay filled in on the next steps. Change a field when that step needs a different file.
           </div>
         )}
         {(stage.id === "fourier" || stage.id === "sustained_transient") && choice && (
@@ -210,13 +219,20 @@ export default function StageRunner({ stage }) {
 
         {error && <div className="mb-4 rounded-md border border-rose-500/25 bg-rose-500/10 px-3 py-2 text-sm text-rose-300">{error}</div>}
 
-        <button
-          onClick={() => run(false)}
-          disabled={status === "running"}
-          className="rounded-md bg-teal-500 px-6 py-3 text-[15px] font-medium text-neutral-950 transition hover:bg-teal-400 disabled:opacity-50"
-        >
-          {status === "running" ? "Running…" : `Run ${stage.title}`}
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => run(false)}
+            disabled={status === "running"}
+            className="rounded-md bg-teal-500 px-6 py-3 text-[15px] font-medium text-neutral-950 transition hover:bg-teal-400 disabled:opacity-50"
+          >
+            {status === "running" ? "Running…" : `Run ${stage.title}`}
+          </button>
+          {status === "running" && (
+            <button type="button" onClick={terminate} className="rounded-md bg-rose-500 px-6 py-3 text-[15px] font-medium text-white">
+              Terminate
+            </button>
+          )}
+        </div>
       </div>
 
       <Console lines={lines} status={status} onClear={reset} />

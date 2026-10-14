@@ -63,7 +63,7 @@ export function valuesForOther(stage, saved, contrast = "c90") {
   for (const field of stage.fields) {
     if (field.key === "out") {
       if (outputs[stage.id]) next.out = outputs[stage.id];
-      else if (root && stage.id === "processor") next.out = `${root}/01_preprocessing`;
+      else if (root && (stage.id === "processor" || stage.id === "locate_synctones")) next.out = `${root}/01_preprocessing`;
       else if (root && stage.id === "stats") next.out = `${root}/01_preprocessing/stats`;
       else if (root && stage.id === "raster") next.out = `${root}/01_preprocessing/rasters`;
       else if (root && stage.id === "filter") next.out = `${root}/02_processing/filtered`;
@@ -84,7 +84,7 @@ export function valuesForStage(stage, dataset, contrast = "c90") {
   const outputKey = { processor: "root", stats: "stats", raster: "raster", filter: "filtered" }[stage.id];
   const next = {};
   for (const field of stage.fields) {
-    if (field.key === "out" && stage.id === "processor") next.out = workspace.root ? `${workspace.root}/01_preprocessing` : "";
+    if (field.key === "out" && (stage.id === "processor" || stage.id === "locate_synctones")) next.out = workspace.root ? `${workspace.root}/01_preprocessing` : "";
     else if (field.key === "out") next.out = workspace[outputKey] || "";
     else if (field.key === "data" && stage.id === "filter") next.data = dirs.data || "";
     else if (field.key === "data") next.data = workspace.filtered || "";
@@ -182,7 +182,7 @@ export default function RecordingSelect({ choice, datasets, animals, onChange, h
         <option value="other">Other files</option>
       </select>
       <p className="mt-1.5 text-xs leading-relaxed text-neutral-500">
-        {hint || "WT1, WT2, WT3, and RD1 load their own files. Other files lets you browse a different dataset."}
+        {hint || "A listed recording loads its own files. Other files is for a recording that is not listed."}
       </p>
     </div>
   );

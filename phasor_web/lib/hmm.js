@@ -253,14 +253,15 @@ function profileById(profileId) {
   return info.profiles.find((p) => p.id === profileId || p.directory === profileId) || null;
 }
 
-function shellScript(workspace, staged, outputDir, profile, maxParallel) {
+export function shellScript(dataRoot, outputDir, maxParallel) {
   const python = pythonExecutable();
-  const models = path.join(workspace, path.basename(profile.models));
-  const refit = path.join(workspace, path.basename(profile.refit));
-  const analysis = path.join(workspace, path.basename(profile.analysis));
-  const results = path.join(staged, "results_run1");
+  const hmmDir = path.join(projectDir(), "phasor_hmm");
+  const models = path.join(hmmDir, "search.py");
+  const refit = path.join(hmmDir, "refit.py");
+  const analysis = path.join(hmmDir, "analysis.py");
+  const results = path.join(dataRoot, "results_run1");
   const bundle = path.join(results, "final_analysis", "bundle.npz");
-  const logDir = path.join(workspace, "logs");
+  const logDir = path.join(outputDir, "logs");
   const copiedBundle = path.join(outputDir, "bundle.npz");
   const status = path.join(outputDir, "phasor_hmm_status.json");
   const eta = SEARCH_ETA.join(" ");
@@ -269,6 +270,8 @@ function shellScript(workspace, staged, outputDir, profile, maxParallel) {
   return `#!/usr/bin/env bash
 set -euo pipefail
 export PYTHONPATH="${projectDir()}"
+export PHASOR_HMM_DATA="${dataRoot}"
+export MPLBACKEND=Agg
 export OMP_NUM_THREADS=1
 export MKL_NUM_THREADS=1
 export OPENBLAS_NUM_THREADS=1
@@ -276,20 +279,31 @@ export NUMEXPR_NUM_THREADS=1
 mkdir -p "${logDir}" "${results}" "${outputDir}"
 on_error() {
   code=$?
+  echo "HMM stopped at exit code $code"
   printf '{"status":"failed","step":"pipeline","exit_code":%s,"updated":"%s"}\\n' "$code" "$(date -Iseconds)" > "${status}"
   exit "$code"
 }
 trap on_error ERR
 printf '{"status":"running","step":"search","updated":"%s"}\\n' "$(date -Iseconds)" > "${status}"
+echo "Search, refit, then Viterbi decode."
+echo "η: ${eta}"
+echo "α: ${alpha}"
 
 search_pids=()
 for eta in ${eta}; do
   for alpha in ${alpha}; do
     csv="${results}/chow_eta\${eta}_alpha\${alpha}.csv"
     if [ -s "$csv" ]; then
+      echo "Search eta=\${eta} alpha=\${alpha} already finished."
       continue
     fi
-    "${python}" -u "${models}" "$eta" "$alpha" > "${logDir}/search_eta\${eta}_alpha\${alpha}.log" 2>&1 &
+    (
+      set +e
+      set -o pipefail
+      echo "---- search eta=\${eta} alpha=\${alpha} ----"
+      "${python}" -u "${models}" "$eta" "$alpha" 2>&1 | tee -a "${logDir}/search_eta\${eta}_alpha\${alpha}.log"
+      echo $? > "${logDir}/search_eta\${eta}_alpha\${alpha}.exit"
+    ) &
     search_pids+=("$!")
     while [ "$(jobs -pr | wc -l)" -ge "${maxParallel}" ]; do
       sleep 2
@@ -298,25 +312,46 @@ for eta in ${eta}; do
 done
 if [ "\${#search_pids[@]}" -gt 0 ]; then
   for pid in "\${search_pids[@]}"; do
-    wait "$pid"
+    wait "$pid" || true
   done
+fi
+fail=0
+for eta in ${eta}; do
+  for alpha in ${alpha}; do
+    mark="${logDir}/search_eta\${eta}_alpha\${alpha}.exit"
+    csv="${results}/chow_eta\${eta}_alpha\${alpha}.csv"
+    if [ -s "$csv" ]; then
+      continue
+    fi
+    code=1
+    if [ -f "$mark" ]; then
+      code=$(cat "$mark")
+    fi
+    echo "Search failed for eta=\${eta} alpha=\${alpha} (exit $code)"
+    fail=1
+  done
+done
+if [ "$fail" != "0" ]; then
+  echo "Search did not finish. Refit was not started."
+  printf '{"status":"failed","step":"search","message":"search failed","updated":"%s"}\\n' "$(date -Iseconds)" > "${status}"
+  exit 1
 fi
 
 printf '{"status":"running","step":"refit","updated":"%s"}\\n' "$(date -Iseconds)" > "${status}"
-if ! compgen -G "${results}/chowliu_K*.npz" > /dev/null; then
-  "${python}" -u "${refit}" > "${logDir}/refit.log" 2>&1
-fi
+echo "---- refit ----"
+"${python}" -u "${refit}" 2>&1 | tee -a "${logDir}/refit.log"
 
 printf '{"status":"running","step":"analysis","updated":"%s"}\\n' "$(date -Iseconds)" > "${status}"
-if [ ! -s "${bundle}" ]; then
-  "${python}" -u "${analysis}" > "${logDir}/analysis.log" 2>&1
-fi
+echo "---- analysis ----"
+"${python}" -u "${analysis}" 2>&1 | tee -a "${logDir}/analysis.log"
 
 if [ ! -s "${bundle}" ]; then
+  echo "bundle.npz was not created."
   printf '{"status":"failed","step":"analysis","message":"bundle.npz was not created","updated":"%s"}\\n' "$(date -Iseconds)" > "${status}"
   exit 1
 fi
 cp -f "${bundle}" "${copiedBundle}"
+echo "bundle.npz is ready: ${copiedBundle}"
 printf '{"status":"complete","step":"done","bundle":"${copiedBundle}","updated":"%s"}\\n' "$(date -Iseconds)" > "${status}"
 `;
 }
@@ -329,9 +364,12 @@ export function start(dataDir, chain, inputs) {
   const bundle = findBundle(resolvedData);
   if (bundle) return { skipped: true, bundle };
 
-  const profiles = scan().profiles;
-  const profile = profileById((chain || {}).profile || "") || profiles[0] || null;
-  if (!profile) return { error: "HMM scripts are not installed on this computer." };
+  const hmmDir = path.join(projectDir(), "phasor_hmm");
+  for (const name of ["search.py", "refit.py", "analysis.py"]) {
+    if (!fs.existsSync(path.join(hmmDir, name))) {
+      return { error: "HMM scripts are not installed on this computer." };
+    }
+  }
 
   const discovered = discoverInputs(resolvedData);
   const supplied = inputs || {};
@@ -347,11 +385,8 @@ export function start(dataDir, chain, inputs) {
 
   const root = projectDir();
   const runId = new Date().toISOString().replace(/[-:T]/g, "").slice(0, 14) + "_" + randomBytes(3).toString("hex");
-  const datasetKey = `phasor_${runId}`;
-  const staged = path.join(root, "data", datasetKey);
-  const workspace = path.join(root, "test", `_phasor_${runId}`);
+  const staged = path.join(root, "data", `phasor_${runId}`);
   const outputDir = path.join(resolvedData, "phasor_hmm_results");
-  fs.mkdirSync(workspace, { recursive: true });
   fs.mkdirSync(path.join(staged, "run1"), { recursive: true });
   fs.mkdirSync(outputDir, { recursive: true });
 
@@ -359,29 +394,29 @@ export function start(dataDir, chain, inputs) {
   copyInput(selected.synctones, path.join(staged, "run1", "synctones.csv"));
   copyInput(selected.stimulus, path.join(staged, "FFsine_2Hz_stims.json"));
 
-  const oldKey = datasetKeyFromScript(profile.models);
-  for (const role of ["models", "refit", "analysis"]) {
-    const source = profile[role];
-    patchScript(source, path.join(workspace, path.basename(source)), oldKey, datasetKey);
-  }
-
   const cfg = loadConfig();
   const maxParallel = Math.max(1, parseInt(cfg.max_parallel_searches || 3, 10));
-  const runScript = path.join(workspace, "run_pipeline.sh");
-  fs.writeFileSync(runScript, shellScript(workspace, staged, outputDir, profile, maxParallel));
+  const runScript = path.join(outputDir, "run_pipeline.sh");
+  fs.writeFileSync(runScript, shellScript(staged, outputDir, maxParallel));
   fs.chmodSync(runScript, 0o755);
 
   const logPath = path.join(outputDir, "phasor_hmm.log");
   fs.writeFileSync(
     logPath,
-    `PHASOR HMM run\nstarted: ${new Date().toISOString()}\nprofile: ${profile.id}\ndata: ${resolvedData}\nworkspace: ${workspace}\n\n`
+    `HMM run\nstarted: ${new Date().toISOString()}\nrecording: ${resolvedData}\nspikes: ${selected.spikes}\nsynctones: ${selected.synctones}\nstimulus: ${selected.stimulus}\n\n`
   );
   const logFd = fs.openSync(logPath, "a");
   const child = spawn("/bin/bash", [runScript], {
-    cwd: workspace,
+    cwd: outputDir,
     stdio: ["ignore", logFd, logFd],
     detached: true,
-    env: { ...process.env, PYTHONUNBUFFERED: "1" },
+    env: {
+      ...process.env,
+      PYTHONUNBUFFERED: "1",
+      MPLBACKEND: "Agg",
+      PHASOR_HMM_DATA: staged,
+      PHASOR_HMM_SOURCE: resolvedData,
+    },
   });
   child.unref();
   fs.closeSync(logFd);
@@ -396,14 +431,12 @@ export function start(dataDir, chain, inputs) {
     href: "/hmm",
     stage: "hmm",
   });
-  saveChain({ profile: profile.id });
   return {
     started: true,
     pid: child.pid,
     log: logPath,
     cores: maxParallel,
     local: true,
-    workspace,
     inputs: selected,
     started_at: new Date().toISOString(),
   };

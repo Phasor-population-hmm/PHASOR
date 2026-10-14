@@ -28,6 +28,7 @@ function hasStage4(dir) {
 }
 
 export function resultsPresent(stageId, values) {
+  if (stageId === "locate_synctones") return Boolean(values.out && fs.existsSync(path.join(values.out, "synctones.csv")));
   if (stageId === "processor") return Boolean(values.out && fs.existsSync(path.join(values.out, "array_4d.npz")));
   if (stageId === "stats" || stageId === "raster" || stageId === "filter") return hasEntries(values.out);
   if (stageId === "cluster") return hasStage4(values.data);

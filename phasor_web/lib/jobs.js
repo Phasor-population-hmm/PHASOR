@@ -105,6 +105,7 @@ export function launch(label, argv, opts = {}) {
     finish({ id: job.id, status: "failed", message: err.message });
   });
   child.on("close", (code) => {
+    if (job.terminated) return;
     job.returncode = code;
     job.status = code === 0 ? "done" : "failed";
     job.finished = Date.now();
@@ -117,7 +118,8 @@ export function launch(label, argv, opts = {}) {
 
 export function stopJob(id) {
   const job = jobs.get(id);
-  if (!job?.pid) return false;
+  if (!job?.pid || job.status !== "running") return false;
+  job.terminated = true;
   try {
     process.kill(-job.pid, "SIGTERM");
   } catch {

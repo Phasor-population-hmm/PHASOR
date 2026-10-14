@@ -165,8 +165,16 @@ def dataset_has_stage6(run_dir: Path) -> bool:
 def load_type_flat_map(contrast: int) -> dict[int, str]:
     """flat_index -> Stage6 Sustained/Transient class (Biphasic excluded)."""
     s6_path = _find_stage6_csv(RUN_DIR, contrast)
-    lm_path = RUN_DIR / "label_index_maps" / f"c{contrast}_txtcells_label_index_map.csv"
-    if s6_path is None or not lm_path.exists():
+    layout_dir = Path(__file__).resolve().parent.parent / "04_stage56"
+    if str(layout_dir) not in sys.path:
+        sys.path.insert(0, str(layout_dir))
+    from condition_layout import label_map_csv
+    lm_path = label_map_csv(RUN_DIR, contrast)
+    if s6_path is None or lm_path is None:
+        print(
+            f"  WARN C{contrast}: sustained/transient labels or the label map were not found under {RUN_DIR}",
+            flush=True,
+        )
         return {}
     if s6_path.stat().st_size < 20:
         return {}
@@ -199,10 +207,19 @@ def load_type_flat_map(contrast: int) -> dict[int, str]:
         right_on="kept_index",
         how="inner",
     )
+    if joined.empty:
+        joined = keep.merge(
+            lm[["kept_index", "flat_index"]],
+            left_on=cell_col,
+            right_on="flat_index",
+            how="inner",
+        )
     out: dict[int, str] = {}
     for _, row in joined.iterrows():
         key = f"{row['polarity']} {row['subtype']}"
         out[int(row["flat_index"])] = key
+    if not out:
+        print(f"  WARN C{contrast}: {len(keep)} sustained/transient cells did not match the label map", flush=True)
     return out
 
 
@@ -275,8 +292,11 @@ def collect_contrast_stats(contrast: int) -> dict:
 
 
 def nice_count_scale(peak: float) -> float:
-    """Match polar_12states_averages: rings at 25/50/75, max ≥ 75 in steps of 25."""
-    return max(75.0, float(np.ceil(float(peak) / 25.0) * 25.0))
+    """Scale the polar radius to the data so small cell counts still draw bars."""
+    peak = float(peak)
+    if peak <= 0:
+        return 1.0
+    return max(peak * 1.25, 1.0)
 
 
 def _draw_outer_gradient_border(ax, r_inner: float, r_outer: float):
@@ -302,13 +322,16 @@ FONTS = {
 
 
 def _draw_scale_rings(ax, scale_max: float, percent: bool, layout: str = "panel"):
-    """Fixed 25 / 50 / 75 rings — same as viterbi_polar_12states_pizza.py."""
+    """Rings at one third and two thirds of the data scale."""
     fs = FONTS[layout]
     tt = np.linspace(0, 2 * np.pi, 720)
-    vals = [25.0, 50.0, 75.0]
-    lbls = ["25%", "50%", "75%"] if percent else ["25", "50", "75"]
+    vals = [scale_max / 3.0, 2.0 * scale_max / 3.0]
+    if percent:
+        lbls = [f"{v:.0f}%" for v in vals]
+    else:
+        lbls = [f"{v:.0f}" if v >= 10 else f"{v:.1f}" for v in vals]
     for val, lbl in zip(vals, lbls):
-        if val > scale_max:
+        if val <= 0 or val > scale_max:
             continue
         r = R0 + (val / scale_max) * R_BAR_MAX
         ax.plot(
@@ -365,7 +388,7 @@ def draw_pizza(ax, values: np.ndarray, scale_max: float, title: str, percent: bo
                     th_bar, h, width=sector_width * 0.80, bottom=R0,
                     color=TYPE_COLORS[single_type],
                     edgecolor="white", linewidth=0.35, alpha=0.94, zorder=4,
-                    clip_on=True,
+                    clip_on=False,
                 )
         else:
             bottom = R0
@@ -382,7 +405,7 @@ def draw_pizza(ax, values: np.ndarray, scale_max: float, title: str, percent: bo
                     th_bar, h, width=sector_width * 0.80, bottom=bottom,
                     color=TYPE_COLORS[tname],
                     edgecolor="white", linewidth=0.35, alpha=0.94, zorder=4,
-                    clip_on=True,
+                    clip_on=False,
                 )
                 bottom += h
 
