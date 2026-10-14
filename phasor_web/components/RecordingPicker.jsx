@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { canonicalField, chooseOutputFolder, runLayout } from "@/lib/layout";
 
 export const RECORDING_KEY = "phasor-recording";
 
@@ -42,9 +43,52 @@ export function readOtherInputs() {
 export function rememberOtherInputs(partial) {
   const current = readOtherInputs();
   const next = { ...current, ...partial };
-  if (partial.outputs) next.outputs = { ...(current.outputs || {}), ...partial.outputs };
+  if (partial.manual) next.manual = { ...(current.manual || {}), ...partial.manual };
   localStorage.setItem(OTHER_KEY, JSON.stringify(next));
   return next;
+}
+
+export function writeOtherInputs(next) {
+  localStorage.setItem(OTHER_KEY, JSON.stringify(next));
+  return next;
+}
+
+const ROOTS_KEY = "phasor-output-roots";
+
+function readRoots() {
+  if (typeof window === "undefined") return {};
+  try {
+    return JSON.parse(localStorage.getItem(ROOTS_KEY) || "{}");
+  } catch {
+    return {};
+  }
+}
+
+export function readOutputRoot(id) {
+  if (!id) return "";
+  return readRoots()[id]?.root || "";
+}
+
+export function readRecordingManual(id) {
+  if (!id) return {};
+  return readRoots()[id]?.manual || {};
+}
+
+export function rememberRecordingFolder(id, stageId, key, value, contrast = "c90") {
+  const all = readRoots();
+  const current = all[id] || { root: "", manual: {} };
+  const chosen = chooseOutputFolder({ workspaceRoot: current.root, manual: current.manual }, stageId, key, value, contrast);
+  all[id] = { root: chosen.workspaceRoot || "", manual: chosen.manual || {} };
+  localStorage.setItem(ROOTS_KEY, JSON.stringify(all));
+  const layout = runLayout(chosen.workspaceRoot, contrast);
+  return {
+    root: layout.root,
+    output: chosen.manual[`${stageId}:${key}`] || canonicalField(stageId, key, layout),
+    runDir: layout.root,
+    analysis: layout.analysis,
+    hmm: layout.hmm,
+    bundle: chosen.bundle || "",
+  };
 }
 
 export function outputRootFromDatasets(datasets) {
@@ -56,24 +100,28 @@ export function outputRootFromDatasets(datasets) {
   return sample.workspace.root.slice(0, index + "/phasor_output".length);
 }
 
-export function valuesForOther(stage, saved, contrast = "c90") {
-  const root = saved.workspaceRoot || "";
-  const outputs = saved.outputs || {};
-  const next = {};
-  for (const field of stage.fields) {
-    if (field.key === "out") {
-      if (outputs[stage.id]) next.out = outputs[stage.id];
-      else if (root && (stage.id === "processor" || stage.id === "locate_synctones")) next.out = `${root}/01_preprocessing`;
-      else if (root && stage.id === "stats") next.out = `${root}/01_preprocessing/stats`;
-      else if (root && stage.id === "raster") next.out = `${root}/01_preprocessing/rasters`;
-      else if (root && stage.id === "filter") next.out = `${root}/02_processing/filtered`;
-      else next.out = "";
-    } else if (field.key === "data" && stage.id === "filter") next.data = saved.data || "";
-    else if (field.key === "data") next.data = saved.filtered || (root ? `${root}/02_processing/filtered` : "");
-    else if (field.key === "run") next.run = root ? `${root}/03_labels` : "";
-    else if (field.key === "cond") next.cond = root ? `${root}/04_fourier/${contrast}` : "";
-    else next[field.key] = saved[field.key] || "";
+function fieldFromLayout(stage, field, saved, layout, manual) {
+  const override = manual[`${stage.id}:${field.key}`];
+  if (override) return override;
+  if (field.key === "out") return canonicalField(stage.id, "out", layout);
+  if (field.key === "data" && stage.id === "filter") {
+    const produced = layout.preprocessing ? `${layout.preprocessing}/array_4d.npz` : "";
+    if (produced && (saved.npz || "") === produced) return layout.preprocessing;
+    return saved.recordingDir || saved.data || "";
   }
+  if (field.key === "data") return layout.filtered || "";
+  if (field.key === "run") return layout.root ? layout.labels : "";
+  if (field.key === "cond") return layout.fourier || "";
+  if (field.key === "npz") return saved.npz || (layout.preprocessing ? `${layout.preprocessing}/array_4d.npz` : "");
+  if (field.key === "synctones") return saved.synctones || (layout.preprocessing ? `${layout.preprocessing}/synctones.csv` : "");
+  return saved[field.key] || "";
+}
+
+export function valuesForOther(stage, saved, contrast = "c90") {
+  const layout = runLayout(saved.workspaceRoot || "", contrast);
+  const manual = saved.manual || {};
+  const next = {};
+  for (const field of stage.fields) next[field.key] = fieldFromLayout(stage, field, saved, layout, manual);
   return next;
 }
 
@@ -81,10 +129,18 @@ export function valuesForStage(stage, dataset, contrast = "c90") {
   const workspace = dataset.workspace || {};
   const files = dataset.files || {};
   const dirs = dataset.dirs || {};
+  const customRoot = readOutputRoot(dataset.id);
+  const manual = readRecordingManual(dataset.id);
+  const layout = customRoot ? runLayout(customRoot, contrast) : null;
   const outputKey = { processor: "root", stats: "stats", raster: "raster", filter: "filtered" }[stage.id];
   const next = {};
   for (const field of stage.fields) {
-    if (field.key === "out" && (stage.id === "processor" || stage.id === "locate_synctones")) next.out = workspace.root ? `${workspace.root}/01_preprocessing` : "";
+    const override = manual[`${stage.id}:${field.key}`];
+    if (override) next[field.key] = field.key === "cond" ? withContrast(override, contrast) : override;
+    else if (layout && (field.key === "out" || field.key === "data" || field.key === "run" || field.key === "cond")) {
+      if (field.key === "data" && stage.id === "filter") next.data = dirs.data || "";
+      else next[field.key] = fieldFromLayout(stage, field, { recordingDir: dirs.data || "" }, layout, manual);
+    } else if (field.key === "out" && (stage.id === "processor" || stage.id === "locate_synctones")) next.out = workspace.root ? `${workspace.root}/01_preprocessing` : "";
     else if (field.key === "out") next.out = workspace[outputKey] || "";
     else if (field.key === "data" && stage.id === "filter") next.data = dirs.data || "";
     else if (field.key === "data") next.data = workspace.filtered || "";

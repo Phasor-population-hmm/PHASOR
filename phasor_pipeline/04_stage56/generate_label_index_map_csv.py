@@ -27,6 +27,8 @@ def _main_4d_files(run_dir: Path) -> list[Path]:
     roots = [run_dir]
     if run_dir.name == "03_labels":
         roots.append(run_dir.parent)
+        roots.append(run_dir.parent / "01_preprocessing")
+    roots.append(run_dir / "01_preprocessing")
     example = _recording_example_dir(run_dir)
     if example is not None:
         roots.append(example)

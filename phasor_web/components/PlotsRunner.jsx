@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import PathField from "./PathField";
 import Console from "./Console";
-import RecordingSelect, { analysisFolderName, outputLabel, prepareRecording, readOtherInputs, rememberOtherInputs, useRecordingCatalog } from "./RecordingPicker";
+import RecordingSelect, { analysisFolderName, outputLabel, prepareRecording, readOtherInputs, readOutputRoot, readRecordingManual, rememberOtherInputs, rememberRecordingFolder, useRecordingCatalog, writeOtherInputs } from "./RecordingPicker";
+import { chooseOutputFolder, runLayout } from "@/lib/layout";
 import { ensureFree } from "./JobDock";
 import { PLOT_NOTES, PLOTS } from "@/lib/stages";
 import { useJobPoll } from "@/hooks/useJobPoll";
@@ -27,15 +28,19 @@ export default function PlotsRunner() {
     if (!choice) return;
     if (choice === "other") {
       const saved = readOtherInputs();
+      const layout = runLayout(saved.workspaceRoot || "");
       setBundle(saved.bundle || "");
-      setRunDir(saved.runDir || saved.workspaceRoot || saved.data || "");
-      setOutput(saved.analysisOut || (saved.workspaceRoot ? `${saved.workspaceRoot}/06_analysis` : ""));
+      setRunDir(saved.manual?.["plots:runDir"] || layout.root || "");
+      setOutput(saved.manual?.["plots:out"] || layout.analysis || "");
       return;
     }
     if (!dataset) return;
+    const custom = readOutputRoot(dataset.id);
+    const layout = custom ? runLayout(custom) : null;
+    const manual = readRecordingManual(dataset.id);
     setBundle(dataset.files.bundle || "");
-    setOutput(dataset.workspace.analysis || "");
-    setRunDir(dataset.workspace.root || dataset.dirs.data || "");
+    setOutput(manual["plots:out"] || layout?.analysis || dataset.workspace.analysis || "");
+    setRunDir(manual["plots:runDir"] || layout?.root || dataset.workspace.root || dataset.dirs.data || "");
   }, [choice, dataset]);
 
   function remember(nextBundle, nextOutput) {
@@ -119,16 +124,37 @@ export default function PlotsRunner() {
           onChange={setChoice}
           hint="A listed recording fills the bundle and the results folder."
         />
-        {dataset && (
+        {(dataset || output) && (
           <div className="mb-5 rounded-xl border border-teal-500/20 bg-teal-500/[0.06] px-4 py-3 text-sm text-neutral-300">
-            Each analysis is saved under {outputLabel(dataset.workspace.analysis)}
+            Each analysis is saved under {outputLabel(output || dataset?.workspace.analysis)}
           </div>
         )}
-        <PathField label="Bundle file" kind="file" filter=".npz" value={bundle} onChange={(value) => { setBundle(value); if (choice === "other") rememberOtherInputs({ bundle: value }); }} placeholder="Choose bundle.npz" />
+        <PathField label="Bundle file" kind="file" filter=".npz" value={bundle} onChange={(value) => { setBundle(value); if (choice === "other") rememberOtherInputs({ bundle: value, manual: { "file:bundle": value } }); }} placeholder="Choose bundle.npz" />
         {choice === "other" && (
-          <PathField label="Stimulus data folder" kind="dir" value={runDir} onChange={(value) => { setRunDir(value); rememberOtherInputs({ runDir: value }); }} placeholder="Folder with 02_processing/filtered, or the recording folder" />
+          <PathField label="Recording folder" kind="dir" value={runDir} onChange={(value) => {
+            const saved = writeOtherInputs(chooseOutputFolder(readOtherInputs(), "plots", "runDir", value, "c90"));
+            const layout = runLayout(saved.workspaceRoot);
+            setRunDir(saved.manual?.["plots:runDir"] || layout.root);
+            setOutput(saved.manual?.["plots:out"] || layout.analysis);
+          }} placeholder="Folder that holds 01_preprocessing, 02_processing, and the later stages" />
         )}
-        <PathField label="Results folder" kind="dir" value={output} onChange={(value) => { setOutput(value); if (choice === "other") rememberOtherInputs({ analysisOut: value }); }} placeholder="Choose where to save results" />
+        <PathField label="Results folder" kind="dir" value={output} onChange={(value) => {
+          if (choice === "other") {
+            const saved = writeOtherInputs(chooseOutputFolder(readOtherInputs(), "plots", "out", value, "c90"));
+            const layout = runLayout(saved.workspaceRoot);
+            setOutput(saved.manual?.["plots:out"] || layout.analysis);
+            setRunDir(saved.manual?.["plots:runDir"] || layout.root);
+            if (!saved.manual?.["file:bundle"] && saved.bundle) setBundle(saved.bundle);
+            return;
+          }
+          if (dataset) {
+            const saved = rememberRecordingFolder(dataset.id, "plots", "out", value, "c90");
+            setOutput(saved.output || saved.analysis);
+            setRunDir(saved.runDir || runDir);
+            return;
+          }
+          setOutput(value);
+        }} placeholder="Choose where to save results" />
 
         <div className="mb-3 rounded-xl border border-white/10 bg-white/[0.03] p-4">
           <div className="font-mono text-[11px] uppercase tracking-wide text-neutral-500">Repetition and cycle</div>

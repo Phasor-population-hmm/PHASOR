@@ -86,9 +86,20 @@ def run_roots(root: Path) -> list[Path]:
         index = parts.index("runs")
         if index + 1 < len(parts):
             add(Path(*parts[: index + 2]))
+    organized = _organized_root(root)
+    if organized is not None:
+        add(organized)
     if root.name in {"06_analysis", "05_hmm", "03_labels", "04_fourier", "01_preprocessing", "02_processing", "filtered"}:
         add(root.parent)
     return found
+
+
+def _has_contrast_data(path: Path) -> bool:
+    if not path.is_dir():
+        return False
+    if (path / "Stage4_Visualization").is_dir():
+        return True
+    return any(path.glob("*filtered*.npz"))
 
 
 def contrast_dir(root: Path, contrast) -> Path:
@@ -109,7 +120,7 @@ def contrast_dir(root: Path, contrast) -> Path:
         ("clustering", "filtered"),
     )
     for base in run_roots(root):
-        if base.name in names and base.is_dir():
+        if base.name in names and _has_contrast_data(base):
             return base
         if base.name in {"filtered", "Filtered_Data", "Filtered Data", "Filtered data"}:
             for name in names:
@@ -132,13 +143,22 @@ def contrast_dir(root: Path, contrast) -> Path:
     raise FileNotFoundError(f"No {label} folder under {root}. Looked for {looked}")
 
 
+def _organized_root(path: Path) -> Path | None:
+    markers = {"01_preprocessing", "02_processing", "03_labels", "04_fourier", "05_hmm", "06_analysis"}
+    parts = Path(path).parts
+    for index, part in enumerate(parts):
+        if part in markers and index > 0:
+            return Path(*parts[:index])
+    return None
+
+
 def _workspace(path: Path) -> Path | None:
     parts = Path(path).parts
     if "runs" in parts:
         index = parts.index("runs")
         if index + 1 < len(parts):
             return Path(*parts[: index + 2])
-    return None
+    return _organized_root(path)
 
 
 def _first_file(paths) -> Path | None:

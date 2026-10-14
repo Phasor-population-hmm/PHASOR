@@ -5,7 +5,8 @@ import Link from "next/link";
 import PathField from "./PathField";
 import Console from "./Console";
 import Breadcrumb from "./Breadcrumb";
-import RecordingSelect, { outputLabel, outputRootFromDatasets, prepareRecording, readOtherInputs, rememberOtherInputs, useRecordingCatalog, valuesForOther, valuesForStage, withContrast } from "./RecordingPicker";
+import RecordingSelect, { outputLabel, outputRootFromDatasets, prepareRecording, readOtherInputs, rememberOtherInputs, rememberRecordingFolder, useRecordingCatalog, valuesForOther, valuesForStage, withContrast, writeOtherInputs } from "./RecordingPicker";
+import { chooseOutputFolder } from "@/lib/layout";
 import { ensureFree } from "./JobDock";
 import { useJobPoll } from "@/hooks/useJobPoll";
 import { STAGES } from "@/lib/stages";
@@ -68,22 +69,34 @@ export default function StageRunner({ stage }) {
   const siblings = STAGES.filter((s) => s.phase === stage.phase);
 
   function setField(key, value) {
-    setValues((prev) => ({ ...prev, [key]: value }));
-    if (choice !== "other") return;
-    const patch = {};
-    if (key === "out") patch.outputs = { [stage.id]: value };
-    else patch[key] = value;
-    if (["spikes", "synctones", "stims", "npz", "h5"].includes(key) && value) {
-      const parent = value.replace(/\/[^/]+$/, "");
-      const name = parent.split("/").filter(Boolean).pop();
-      const outputRoot = outputRootFromDatasets(datasets);
-      if (outputRoot && name) patch.workspaceRoot = `${outputRoot}/runs/${name}`;
-      if (key !== "h5") patch.data = parent;
+    const outputChoice = ["out", "run", "cond"].includes(key) || (key === "data" && stage.id === "cluster");
+    if (choice === "other") {
+      if (outputChoice) {
+        const saved = writeOtherInputs(chooseOutputFolder(readOtherInputs(), stage.id, key, value, contrast));
+        setValues(valuesForOther(stage, saved, contrast));
+        return;
+      }
+      const current = readOtherInputs();
+      const patch = { [key]: value, manual: { [`file:${key}`]: value } };
+      if (["spikes", "synctones", "stims", "npz", "h5"].includes(key) && value && !current.workspaceRoot) {
+        const parent = value.replace(/\/[^/]+$/, "");
+        const name = parent.split("/").filter(Boolean).pop();
+        const outputRoot = outputRootFromDatasets(datasets);
+        if (outputRoot && name) patch.workspaceRoot = `${outputRoot}/runs/${name}`;
+        if (key !== "h5") patch.recordingDir = parent;
+      }
+      if (key === "stims") patch.stimulus = value;
+      if (key === "data" && stage.id === "filter") patch.recordingDir = value;
+      const saved = rememberOtherInputs(patch);
+      setValues(valuesForOther(stage, saved, contrast));
+      return;
     }
-    if (stage.id === "processor" && key === "out" && value) patch.npz = `${value.replace(/\/$/, "")}/array_4d.npz`;
-    if (stage.id === "locate_synctones" && key === "out" && value) patch.synctones = `${value.replace(/\/$/, "")}/synctones.csv`;
-    if (key === "data" && stage.id === "filter") patch.data = value;
-    rememberOtherInputs(patch);
+    if (dataset && outputChoice) {
+      rememberRecordingFolder(dataset.id, stage.id, key, value, contrast);
+      setValues(valuesForStage(stage, dataset, contrast));
+      return;
+    }
+    setValues((prev) => ({ ...prev, [key]: value }));
   }
 
   async function run(overwrite = false) {
@@ -92,10 +105,21 @@ export default function StageRunner({ stage }) {
     if (!(await ensureFree())) return;
     if (dataset) await prepareRecording(dataset.id);
     if (choice === "other") {
-      const patch = { ...values };
-      if (values.out) patch.outputs = { [stage.id]: values.out };
-      if (stage.id === "processor" && values.out) patch.npz = `${values.out.replace(/\/$/, "")}/array_4d.npz`;
-      rememberOtherInputs(patch);
+      let saved = readOtherInputs();
+      const folderKey = values.out ? "out" : values.cond ? "cond" : values.run ? "run" : values.data && stage.id === "cluster" ? "data" : "";
+      if (folderKey) saved = chooseOutputFolder(saved, stage.id, folderKey, values[folderKey], contrast);
+      for (const key of ["spikes", "synctones", "stims", "npz", "h5"]) {
+        if (values[key]) {
+          saved[key] = values[key];
+          saved.manual = { ...(saved.manual || {}), [`file:${key}`]: values[key] };
+        }
+      }
+      if (values.stims) saved.stimulus = values.stims;
+      if (stage.id === "filter" && values.data) saved.recordingDir = values.data;
+      writeOtherInputs(saved);
+    } else if (dataset) {
+      const folderKey = values.out ? "out" : values.cond ? "cond" : values.run ? "run" : values.data && stage.id === "cluster" ? "data" : "";
+      if (folderKey && values[folderKey]) rememberRecordingFolder(dataset.id, stage.id, folderKey, values[folderKey], contrast);
     }
     localStorage.setItem(memoryKey, JSON.stringify(values));
     const res = await fetch("/api/run", {

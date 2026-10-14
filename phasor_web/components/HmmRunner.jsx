@@ -6,7 +6,8 @@ import Console from "./Console";
 import HmmStepper from "./HmmStepper";
 import Breadcrumb from "./Breadcrumb";
 import StateGraph from "./visuals/StateGraph";
-import RecordingSelect, { outputLabel, prepareRecording, useRecordingCatalog } from "./RecordingPicker";
+import RecordingSelect, { outputLabel, prepareRecording, readOtherInputs, readOutputRoot, readRecordingManual, rememberOtherInputs, rememberRecordingFolder, useRecordingCatalog, writeOtherInputs } from "./RecordingPicker";
+import { chooseOutputFolder, runLayout } from "@/lib/layout";
 import { ensureFree } from "./JobDock";
 
 const INPUT_FIELDS = [
@@ -50,12 +51,21 @@ export default function HmmRunner() {
   useEffect(() => {
     if (!choice) return;
     if (choice === "other") {
-      setDataDir("");
-      setInputs({ spikes: "", synctones: "", stimulus: "" });
+      const saved = readOtherInputs();
+      const layout = runLayout(saved.workspaceRoot || "");
+      setDataDir(saved.manual?.["hmm:out"] || layout.hmm || "");
+      setInputs({
+        spikes: saved.spikes || "",
+        synctones: saved.synctones || "",
+        stimulus: saved.stimulus || saved.stims || "",
+      });
       return;
     }
     if (!dataset) return;
-    setDataDir(dataset.workspace.hmm || "");
+    const custom = readOutputRoot(dataset.id);
+    const layout = custom ? runLayout(custom) : null;
+    const manual = readRecordingManual(dataset.id);
+    setDataDir(manual["hmm:out"] || layout?.hmm || dataset.workspace.hmm || "");
     setInputs({
       spikes: dataset.files.spikes || "",
       synctones: dataset.files.synctones || "",
@@ -63,8 +73,29 @@ export default function HmmRunner() {
     });
   }, [choice, dataset]);
 
+  function setDataFolder(value) {
+    if (choice === "other") {
+      const saved = writeOtherInputs(chooseOutputFolder(readOtherInputs(), "hmm", "out", value, "c90"));
+      setDataDir(saved.manual?.["hmm:out"] || runLayout(saved.workspaceRoot).hmm);
+      return;
+    }
+    if (dataset) {
+      const saved = rememberRecordingFolder(dataset.id, "hmm", "out", value, "c90");
+      setDataDir(saved.output || saved.hmm);
+      return;
+    }
+    setDataDir(value);
+  }
+
   function setInput(key, value) {
     setInputs((prev) => ({ ...prev, [key]: value }));
+    if (choice !== "other") return;
+    const patch = { [key]: value, manual: { [`file:${key}`]: value } };
+    if (key === "stimulus") {
+      patch.stims = value;
+      patch.manual["file:stims"] = value;
+    }
+    rememberOtherInputs(patch);
   }
 
   async function detect() {
@@ -223,10 +254,10 @@ export default function HmmRunner() {
         )}
         {choice === "other" && (
           <div className="mb-5 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-neutral-400">
-            Choose the dataset folder and the three input files, then start the fit.
+            The folder chosen on an earlier step is kept. The fit is saved in 05_hmm.
           </div>
         )}
-        <PathField label="HMM output folder" kind="dir" value={dataDir} onChange={setDataDir} />
+        <PathField label="HMM output folder" kind="dir" value={dataDir} onChange={setDataFolder} />
         <button onClick={detect} className="-mt-2 mb-6 rounded-md border border-neutral-800 px-4 py-2 text-sm text-neutral-300 hover:border-neutral-700">
           Detect HMM inputs
         </button>

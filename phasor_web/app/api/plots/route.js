@@ -5,7 +5,7 @@ import { PLOTS } from "@/lib/stages";
 import { PIPELINE, OUTPUT_ROOT } from "@/lib/paths";
 import { launch } from "@/lib/jobs";
 import { pipelinePython } from "@/lib/pythonPath";
-import { plotResultsPresent } from "@/lib/overwrite";
+import { ensureLayout, plotResultsPresent } from "@/lib/overwrite";
 
 const PLOT_IDS = new Set(PLOTS.map((row) => row[0]));
 
@@ -37,6 +37,7 @@ export async function POST(request) {
     if (item.run_dir) runDir = path.resolve(item.run_dir);
     else if (path.basename(parent) === "phasor_hmm_results") runDir = path.dirname(parent);
     else runDir = parent;
+    ensureLayout(runDir);
     if (!fs.existsSync(runDir) || !fs.statSync(runDir).isDirectory()) {
       return NextResponse.json({ error: `run directory not found: ${runDir}` }, { status: 400 });
     }
@@ -47,6 +48,7 @@ export async function POST(request) {
     return NextResponse.json({ needsOverwrite: true, folder: outputDir }, { status: 409 });
   }
 
+  ensureLayout(outputDir);
   fs.mkdirSync(outputDir, { recursive: true });
   const dsJson = path.join(outputDir, "_selected_datasets.json");
   fs.writeFileSync(dsJson, JSON.stringify(datasets, null, 2));

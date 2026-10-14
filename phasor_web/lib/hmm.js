@@ -6,6 +6,7 @@ import { APP_ROOT, MODE_PROJECT_DEFAULT, HMM_CONFIG_PATH } from "./paths";
 import { pipelinePython } from "./pythonPath";
 import { displayPath } from "./paths";
 import { claim, finish, readSession, runningSession } from "./session";
+import { ensureLayout } from "./overwrite";
 
 const SEARCH_ETA = [0.0005, 0.002, 0.005];
 const SEARCH_ALPHA = [0.5];
@@ -358,6 +359,7 @@ printf '{"status":"complete","step":"done","bundle":"${copiedBundle}","updated":
 
 export function start(dataDir, chain, inputs) {
   if (runningSession()) return { error: "Already one job or operation in process.", busy: true };
+  ensureLayout(dataDir);
   const resolvedData = path.resolve(dataDir);
   if (!fs.existsSync(resolvedData)) return { error: `Dataset folder not found: ${resolvedData}` };
 

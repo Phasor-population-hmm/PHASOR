@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { stageById } from "@/lib/stages";
 import { buildArgv, launch } from "@/lib/jobs";
 import { pipelinePython } from "@/lib/pythonPath";
-import { resultFolder, resultsPresent } from "@/lib/overwrite";
+import { ensureLayout, resultFolder, resultsPresent } from "@/lib/overwrite";
 
 export async function POST(request) {
   const body = await request.json();
@@ -16,6 +16,7 @@ export async function POST(request) {
   if (resultsPresent(stage.id, values) && !body.overwrite) {
     return NextResponse.json({ needsOverwrite: true, folder: resultFolder(stage.id, values) }, { status: 409 });
   }
+  ensureLayout(resultFolder(stage.id, values));
 
   const argv = buildArgv(stage, values, pipelinePython());
   try {
