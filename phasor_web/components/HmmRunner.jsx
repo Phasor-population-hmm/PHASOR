@@ -9,6 +9,131 @@ import StateGraph from "./visuals/StateGraph";
 import RecordingSelect, { outputLabel, prepareRecording, readOtherInputs, readOutputRoot, readRecordingManual, rememberOtherInputs, rememberRecordingFolder, useRecordingCatalog, writeOtherInputs } from "./RecordingPicker";
 import { chooseOutputFolder, runLayout } from "@/lib/layout";
 import { ensureFree } from "./JobDock";
+import { DEFAULT_HMM_SEARCH, HMM_ALPHA_CHOICES, HMM_ETA_CHOICES, HMM_K_CHOICES, formatSearchNumber, normalizeSearch } from "@/lib/hmmSearch";
+
+const SEARCH_MEMORY = "phasor-hmm-search";
+
+function loadSearch() {
+  if (typeof window === "undefined") return { ...DEFAULT_HMM_SEARCH, k: [...DEFAULT_HMM_SEARCH.k], alpha: [...DEFAULT_HMM_SEARCH.alpha], eta: [...DEFAULT_HMM_SEARCH.eta] };
+  try {
+    return normalizeSearch(JSON.parse(localStorage.getItem(SEARCH_MEMORY) || "null") || {});
+  } catch {
+    return { k: [...DEFAULT_HMM_SEARCH.k], alpha: [...DEFAULT_HMM_SEARCH.alpha], eta: [...DEFAULT_HMM_SEARCH.eta] };
+  }
+}
+
+function SearchSettings({ value, onChange }) {
+  const [open, setOpen] = useState(false);
+  const [draft, setDraft] = useState({ k: "", alpha: "", eta: "" });
+  const [note, setNote] = useState("");
+
+  function toggle(kind, item) {
+    const current = value[kind];
+    const has = current.some((entry) => entry === item);
+    const next = has ? current.filter((entry) => entry !== item) : [...current, item];
+    try {
+      const parsed = normalizeSearch({ ...value, [kind]: next });
+      onChange(parsed);
+      setNote("");
+    } catch (err) {
+      setNote(err.message);
+    }
+  }
+
+  function addCustom(kind) {
+    if (!String(draft[kind]).trim()) {
+      setNote("Enter a value to add");
+      return;
+    }
+    try {
+      const parsed = normalizeSearch({ ...value, [kind]: [...value[kind], draft[kind]] });
+      onChange(parsed);
+      setDraft((prev) => ({ ...prev, [kind]: "" }));
+      setNote("");
+    } catch (err) {
+      setNote(err.message);
+    }
+  }
+
+  const groups = [
+    { kind: "k", label: "K", choices: HMM_K_CHOICES, hint: "Number of hidden states. Whole numbers from 2 to 30." },
+    { kind: "alpha", label: "alpha", choices: HMM_ALPHA_CHOICES, hint: "Greater than 0 and at most 5." },
+    { kind: "eta", label: "eta", choices: HMM_ETA_CHOICES, hint: "Covariance soft-threshold. Greater than 0 and at most 1." },
+  ];
+
+  return (
+    <div className="mb-5 rounded-xl border border-neutral-800 bg-neutral-950">
+      <button type="button" onClick={() => setOpen((prev) => !prev)} className="flex w-full items-center justify-between px-4 py-3 text-left">
+        <span>
+          <span className="block text-sm text-neutral-200">Search settings</span>
+          <span className="mt-1 block font-mono text-[12px] text-neutral-500">
+            K {value.k.join(", ")}   alpha {value.alpha.map(formatSearchNumber).join(", ")}   eta {value.eta.map(formatSearchNumber).join(", ")}
+          </span>
+        </span>
+        <span className="text-sm text-neutral-400">{open ? "Hide" : "Change"}</span>
+      </button>
+      {open && (
+        <div className="border-t border-neutral-800 px-4 py-4">
+          <p className="text-sm leading-relaxed text-neutral-400">
+            Highlighted values are used for the next fit. The standard search is K 3, 6, 9, 12, and 15, alpha 0.5, and eta 0.0005, 0.002, and 0.005. Each eta and alpha pair is searched, and every selected K is tried inside that search. Refit keeps the combination the search prefers.
+          </p>
+          {groups.map((group) => {
+            const extras = value[group.kind].filter((item) => !group.choices.includes(item));
+            const shown = [...group.choices, ...extras];
+            return (
+              <div key={group.kind} className="mt-4">
+                <div className="text-sm text-neutral-200">{group.label}</div>
+                <p className="mt-1 text-xs text-neutral-500">{group.hint}</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {shown.map((item) => {
+                    const on = value[group.kind].includes(item);
+                    return (
+                      <button
+                        key={formatSearchNumber(item)}
+                        type="button"
+                        onClick={() => toggle(group.kind, item)}
+                        className={on ? "rounded-md border border-teal-500/40 bg-teal-500/15 px-3 py-1.5 font-mono text-[13px] text-teal-100" : "rounded-md border border-neutral-800 px-3 py-1.5 font-mono text-[13px] text-neutral-400"}
+                      >
+                        {formatSearchNumber(item)}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="mt-2 flex gap-2">
+                  <input
+                    value={draft[group.kind]}
+                    onChange={(event) => setDraft((prev) => ({ ...prev, [group.kind]: event.target.value }))}
+                    placeholder="Add a value"
+                    className="w-36 rounded-md border border-neutral-800 bg-neutral-900 px-3 py-1.5 font-mono text-[13px] text-neutral-100"
+                  />
+                  <button type="button" onClick={() => addCustom(group.kind)} className="rounded-md border border-neutral-800 px-3 py-1.5 text-sm text-neutral-300">
+                    Add
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+            <p className="text-sm text-neutral-400">
+              {value.eta.length * value.alpha.length} searches, with {value.k.length} values of K in each. Up to 3 searches run at the same time.
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                onChange({ k: [...DEFAULT_HMM_SEARCH.k], alpha: [...DEFAULT_HMM_SEARCH.alpha], eta: [...DEFAULT_HMM_SEARCH.eta] });
+                setNote("");
+              }}
+              className="text-sm text-neutral-400 underline decoration-neutral-700"
+            >
+              Use the default values
+            </button>
+          </div>
+          {note && <p className="mt-3 text-sm text-rose-300">{note}</p>}
+        </div>
+      )}
+    </div>
+  );
+}
 
 const INPUT_FIELDS = [
   { key: "spikes", label: "Spike times (.txt)", kind: "file" },
@@ -24,6 +149,11 @@ export default function HmmRunner() {
   const [status, setStatus] = useState("idle");
   const [step, setStep] = useState("");
   const [error, setError] = useState("");
+  const [search, setSearch] = useState({
+    k: [...DEFAULT_HMM_SEARCH.k],
+    alpha: [...DEFAULT_HMM_SEARCH.alpha],
+    eta: [...DEFAULT_HMM_SEARCH.eta],
+  });
   const pollRef = useRef(null);
   const { datasets, animals, choice, setChoice, dataset } = useRecordingCatalog();
 
@@ -40,6 +170,15 @@ export default function HmmRunner() {
       })
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    setSearch(loadSearch());
+  }, []);
+
+  function updateSearch(next) {
+    setSearch(next);
+    localStorage.setItem(SEARCH_MEMORY, JSON.stringify(next));
+  }
 
   useEffect(() => {
     fetch("/api/hmm/scan")
@@ -194,7 +333,7 @@ export default function HmmRunner() {
     const res = await fetch("/api/hmm", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ data: dataDir, chain: {}, inputs }),
+      body: JSON.stringify({ data: dataDir, chain: {}, inputs, search }),
     });
     const r = await res.json();
     setLines([]);
@@ -209,9 +348,13 @@ export default function HmmRunner() {
       setStep("done");
       return;
     }
+    const used = r.search || search;
     setLines([
       "HMM started on the selected recording.",
       "It uses " + (r.cores || 3) + " cores.",
+      "K " + used.k.join(", "),
+      "alpha " + used.alpha.map(formatSearchNumber).join(", "),
+      "eta " + used.eta.map(formatSearchNumber).join(", "),
       "  results   " + dataDir,
     ]);
     setStatus("running");
@@ -228,8 +371,9 @@ export default function HmmRunner() {
           <h1 className="text-3xl font-semibold tracking-tight text-neutral-50">Hidden Markov Model</h1>
           <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-neutral-400">
             Fits a population hidden Markov model to the selected spike file, synctone times, and stimulus file.
-            The search uses a covariance soft-threshold at η of 0.0005, 0.002, and 0.005, with α = 0.5, then refits
-            and decodes the latent state. An existing bundle.npz is reused.
+            The default search uses K of 3, 6, 9, 12, and 15, alpha 0.5, and eta 0.0005, 0.002, and 0.005.
+            Search settings can use other values. The fit then refits the preferred model and decodes the latent state.
+            An existing bundle.npz is reused.
           </p>
         </div>
         <StateGraph className="hidden h-[150px] w-full text-neutral-600 lg:block" />
@@ -266,6 +410,8 @@ export default function HmmRunner() {
           <PathField key={f.key} label={f.label} kind={f.kind} value={inputs[f.key]} onChange={(v) => setInput(f.key, v)} />
         ))}
 
+        <SearchSettings value={search} onChange={updateSearch} />
+
         <div className="mt-2 rounded-xl border border-neutral-900 bg-neutral-950 p-5">
           {!scanInfo ? (
             <div className="text-sm text-neutral-500">Scanning HMM project…</div>
@@ -296,7 +442,7 @@ export default function HmmRunner() {
                 </div>
               </div>
               <p className="mt-4 text-[13px] text-neutral-500">
-                The three η searches run together, then the selected model is refit and decoded.
+                The selected eta and alpha pairs run together, up to 3 at a time, then the preferred model is refit and decoded.
               </p>
             </>
           )}

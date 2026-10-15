@@ -12,15 +12,39 @@ os.environ["MKL_NUM_THREADS"] = "1"
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
 os.environ["NUMEXPR_NUM_THREADS"] = "1"
 
-eta = float(sys.argv[1])
-alpha = float(sys.argv[2])
+eta_text = sys.argv[1]
+alpha_text = sys.argv[2]
+eta = float(eta_text)
+alpha = float(alpha_text)
+
+
+def k_list_from_arg(text):
+    default = [3, 6, 9, 12, 15]
+    if text is None or str(text).strip() == "":
+        return default
+    values = []
+    for part in str(text).split(","):
+        part = part.strip()
+        if not part:
+            continue
+        k = int(part)
+        if k < 2:
+            raise SystemExit(f"K must be at least 2, got {k}")
+        if k not in values:
+            values.append(k)
+    if not values:
+        raise SystemExit("Choose at least one K")
+    return values
+
+
+K_list = k_list_from_arg(sys.argv[3] if len(sys.argv) > 3 else "")
 
 DATA_ROOT = Path(os.environ["PHASOR_HMM_DATA"])
 RUN_DIR = DATA_ROOT / "run1"
 OUT_DIR = DATA_ROOT / "results_run1"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
-print(f"HMM search  eta={eta}  alpha={alpha}", flush=True)
+print(f"HMM search  eta={eta_text}  alpha={alpha_text}  K={K_list}", flush=True)
 print(f"Recording folder: {os.environ.get('PHASOR_HMM_SOURCE', DATA_ROOT)}", flush=True)
 
 import numpy as np
@@ -73,7 +97,6 @@ def make_chowliu_model(K, X_tr, seed):
     return HMMModel(K, em, random_state=seed)
 
 
-K_list = [3, 6, 9, 12, 15]
 t0 = time.time()
 out = splitcv_time_forward(
     X_train,
@@ -109,6 +132,6 @@ for K in K_list:
 df = pd.DataFrame(rows)
 df["rank_val_within_eta_alpha"] = df["val_mean"].rank(ascending=False, method="dense").astype(int)
 print(df.sort_values("val_mean", ascending=False).to_string(index=False), flush=True)
-outname = OUT_DIR / f"chow_eta{eta}_alpha{alpha}.csv"
+outname = OUT_DIR / f"chow_eta{eta_text}_alpha{alpha_text}.csv"
 df.to_csv(outname, index=False)
 print("Saved:", outname, flush=True)

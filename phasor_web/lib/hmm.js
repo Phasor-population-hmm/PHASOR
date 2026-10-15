@@ -7,9 +7,7 @@ import { pipelinePython } from "./pythonPath";
 import { displayPath } from "./paths";
 import { claim, finish, readSession, runningSession } from "./session";
 import { ensureLayout } from "./overwrite";
-
-const SEARCH_ETA = [0.0005, 0.002, 0.005];
-const SEARCH_ALPHA = [0.5];
+import { formatSearchNumber, normalizeSearch } from "./hmmSearch";
 
 export function loadConfig() {
   if (fs.existsSync(HMM_CONFIG_PATH)) {
@@ -254,7 +252,7 @@ function profileById(profileId) {
   return info.profiles.find((p) => p.id === profileId || p.directory === profileId) || null;
 }
 
-export function shellScript(dataRoot, outputDir, maxParallel) {
+export function shellScript(dataRoot, outputDir, maxParallel, search) {
   const python = pythonExecutable();
   const hmmDir = path.join(projectDir(), "phasor_hmm");
   const models = path.join(hmmDir, "search.py");
@@ -265,8 +263,11 @@ export function shellScript(dataRoot, outputDir, maxParallel) {
   const logDir = path.join(outputDir, "logs");
   const copiedBundle = path.join(outputDir, "bundle.npz");
   const status = path.join(outputDir, "phasor_hmm_status.json");
-  const eta = SEARCH_ETA.join(" ");
-  const alpha = SEARCH_ALPHA.join(" ");
+  const grid = normalizeSearch(search);
+  const eta = grid.eta.map(formatSearchNumber).join(" ");
+  const alpha = grid.alpha.map(formatSearchNumber).join(" ");
+  const kList = grid.k.join(",");
+  const kText = grid.k.join(" ");
 
   return `#!/usr/bin/env bash
 set -euo pipefail
@@ -287,6 +288,7 @@ on_error() {
 trap on_error ERR
 printf '{"status":"running","step":"search","updated":"%s"}\\n' "$(date -Iseconds)" > "${status}"
 echo "Search, refit, then Viterbi decode."
+echo "K: ${kText}"
 echo "η: ${eta}"
 echo "α: ${alpha}"
 
@@ -302,7 +304,7 @@ for eta in ${eta}; do
       set +e
       set -o pipefail
       echo "---- search eta=\${eta} alpha=\${alpha} ----"
-      "${python}" -u "${models}" "$eta" "$alpha" 2>&1 | tee -a "${logDir}/search_eta\${eta}_alpha\${alpha}.log"
+      "${python}" -u "${models}" "$eta" "$alpha" "${kList}" 2>&1 | tee -a "${logDir}/search_eta\${eta}_alpha\${alpha}.log"
       echo $? > "${logDir}/search_eta\${eta}_alpha\${alpha}.exit"
     ) &
     search_pids+=("$!")
@@ -357,8 +359,14 @@ printf '{"status":"complete","step":"done","bundle":"${copiedBundle}","updated":
 `;
 }
 
-export function start(dataDir, chain, inputs) {
+export function start(dataDir, chain, inputs, search) {
   if (runningSession()) return { error: "Already one job or operation in process.", busy: true };
+  let grid;
+  try {
+    grid = normalizeSearch(search);
+  } catch (err) {
+    return { error: err.message || "Choose K, alpha, and eta." };
+  }
   ensureLayout(dataDir);
   const resolvedData = path.resolve(dataDir);
   if (!fs.existsSync(resolvedData)) return { error: `Dataset folder not found: ${resolvedData}` };
@@ -399,13 +407,13 @@ export function start(dataDir, chain, inputs) {
   const cfg = loadConfig();
   const maxParallel = Math.max(1, parseInt(cfg.max_parallel_searches || 3, 10));
   const runScript = path.join(outputDir, "run_pipeline.sh");
-  fs.writeFileSync(runScript, shellScript(staged, outputDir, maxParallel));
+  fs.writeFileSync(runScript, shellScript(staged, outputDir, maxParallel, grid));
   fs.chmodSync(runScript, 0o755);
 
   const logPath = path.join(outputDir, "phasor_hmm.log");
   fs.writeFileSync(
     logPath,
-    `HMM run\nstarted: ${new Date().toISOString()}\nrecording: ${resolvedData}\nspikes: ${selected.spikes}\nsynctones: ${selected.synctones}\nstimulus: ${selected.stimulus}\n\n`
+    `HMM run\nstarted: ${new Date().toISOString()}\nrecording: ${resolvedData}\nspikes: ${selected.spikes}\nsynctones: ${selected.synctones}\nstimulus: ${selected.stimulus}\nK: ${grid.k.join(" ")}\neta: ${grid.eta.map(formatSearchNumber).join(" ")}\nalpha: ${grid.alpha.map(formatSearchNumber).join(" ")}\n\n`
   );
   const logFd = fs.openSync(logPath, "a");
   const child = spawn("/bin/bash", [runScript], {
@@ -439,6 +447,7 @@ export function start(dataDir, chain, inputs) {
     log: logPath,
     cores: maxParallel,
     local: true,
+    search: grid,
     inputs: selected,
     started_at: new Date().toISOString(),
   };

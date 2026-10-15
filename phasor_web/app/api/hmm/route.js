@@ -10,7 +10,7 @@ export async function POST(request) {
   if (!dataDir) return NextResponse.json({ error: "select a dataset folder" }, { status: 400 });
   const chain = body.chain || null;
   if (chain) saveChain(chain);
-  const result = start(dataDir, chain, body.inputs);
+  const result = start(dataDir, chain, body.inputs, body.search);
   if (result.busy) return NextResponse.json(result, { status: 409 });
   return NextResponse.json(result);
 }
