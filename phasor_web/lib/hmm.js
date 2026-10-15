@@ -388,6 +388,7 @@ echo "---- analysis ----"
 "${python}" -u "${analysis}" 2>&1 | tee -a "${logDir}/analysis.log"
 
 if [ ! -s "${bundle}" ]; then
+  publish_results || true
   echo "bundle.npz was not created."
   printf '{"status":"failed","step":"analysis","message":"bundle.npz was not created","updated":"%s"}\\n' "$(date -Iseconds)" > "${status}"
   exit 1
