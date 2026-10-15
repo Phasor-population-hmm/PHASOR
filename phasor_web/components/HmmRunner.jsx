@@ -341,6 +341,12 @@ export default function HmmRunner() {
       setError(r.error);
       return;
     }
+    if (r.already) {
+      setLines(["Search, refit, and analysis are already saved.", "  " + (r.saved || dataDir + "/results_run1")]);
+      setStatus("done");
+      setStep("done");
+      return;
+    }
     if (r.skipped) {
       setLines(["bundle.npz already present, skipping the HMM fit.", "  " + r.bundle, "", "Ready. Open the Viterbi plots page to render results."]);
       setStatus("done");
@@ -359,7 +365,7 @@ export default function HmmRunner() {
       "K " + used.k.join(", "),
       "alpha " + used.alpha.map(formatSearchNumber).join(", "),
       "eta " + used.eta.map(formatSearchNumber).join(", "),
-      "  results   " + dataDir,
+      "  results   " + dataDir + "/results_run1",
     ]);
     setStatus("running");
     setStep("search");
@@ -377,7 +383,7 @@ export default function HmmRunner() {
             Fits a population hidden Markov model to the selected spike file, synctone times, and stimulus file.
             Alpha stays at 0.5. The default search uses K of 3, 6, 9, 12, and 15, and eta 0.0005, 0.002, and 0.005.
             Search settings can use other K and eta values. The fit then refits the preferred model and decodes the latent state.
-            Search tables, the refit model, and the figures are saved in 05_hmm/phasor_hmm_results/results_run1.
+            Search tables, the refit model, and the figures are saved in 05_hmm/results_run1.
             An existing bundle.npz is reused.
           </p>
         </div>

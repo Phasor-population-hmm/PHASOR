@@ -261,8 +261,9 @@ export function shellScript(dataRoot, outputDir, maxParallel, search) {
   const results = path.join(dataRoot, "results_run1");
   const bundle = path.join(results, "final_analysis", "bundle.npz");
   const logDir = path.join(outputDir, "logs");
-  const copiedBundle = path.join(outputDir, "bundle.npz");
-  const savedResults = path.join(outputDir, "results_run1");
+  const hmmFolder = path.dirname(outputDir);
+  const copiedBundle = path.join(hmmFolder, "bundle.npz");
+  const savedResults = path.join(hmmFolder, "results_run1");
   const status = path.join(outputDir, "phasor_hmm_status.json");
   const grid = normalizeSearch(search);
   const eta = grid.eta.map(formatSearchNumber).join(" ");
@@ -288,6 +289,7 @@ publish_results() {
   fi
   if [ -s "${bundle}" ]; then
     cp -f "${bundle}" "${copiedBundle}"
+    cp -f "${bundle}" "${outputDir}/bundle.npz"
   fi
 }
 on_error() {
@@ -456,6 +458,30 @@ function resumeStep(staged, grid) {
   return searchNewer ? "refit" : "analysis";
 }
 
+function analysisFinished(resultsDir) {
+  try {
+    return fs.statSync(path.join(resultsDir, "final_analysis", "viterbi_bands.png")).size > 0;
+  } catch {
+    return false;
+  }
+}
+
+export function publishHmmResults(staged, hmmDir) {
+  const src = path.join(staged, "results_run1");
+  const dest = path.join(hmmDir, "results_run1");
+  if (!staged || !fs.existsSync(src) || path.resolve(src) === path.resolve(dest)) return "";
+  fs.mkdirSync(dest, { recursive: true });
+  fs.cpSync(src, dest, { recursive: true, force: true });
+  const bundle = path.join(dest, "final_analysis", "bundle.npz");
+  if (fs.existsSync(bundle) && fs.statSync(bundle).size > 0) {
+    fs.copyFileSync(bundle, path.join(hmmDir, "bundle.npz"));
+    const nested = path.join(hmmDir, "phasor_hmm_results");
+    fs.mkdirSync(nested, { recursive: true });
+    fs.copyFileSync(bundle, path.join(nested, "bundle.npz"));
+  }
+  return dest;
+}
+
 export function start(dataDir, chain, inputs, search) {
   if (runningSession()) return { error: "Already one job or operation in process.", busy: true };
   let grid;
@@ -468,8 +494,26 @@ export function start(dataDir, chain, inputs, search) {
   const resolvedData = path.resolve(dataDir);
   if (!fs.existsSync(resolvedData)) return { error: `Dataset folder not found: ${resolvedData}` };
 
+  const outputDir = path.join(resolvedData, "phasor_hmm_results");
+  fs.mkdirSync(outputDir, { recursive: true });
+  const previous = existingStaged(outputDir);
+  if (previous) publishHmmResults(previous, resolvedData);
+  const savedResults = path.join(resolvedData, "results_run1");
+  const nestedResults = path.join(outputDir, "results_run1");
+  if (!analysisFinished(savedResults) && analysisFinished(nestedResults)) {
+    fs.cpSync(nestedResults, savedResults, { recursive: true, force: true });
+  }
+  if (analysisFinished(savedResults) || (previous && analysisFinished(path.join(previous, "results_run1")))) {
+    if (!analysisFinished(savedResults) && previous) publishHmmResults(previous, resolvedData);
+    return {
+      already: true,
+      saved: savedResults,
+      bundle: path.join(savedResults, "final_analysis", "bundle.npz"),
+    };
+  }
+
   const bundle = findBundle(resolvedData);
-  if (bundle) return { skipped: true, bundle };
+  if (bundle && !previous) return { skipped: true, bundle };
 
   const hmmDir = path.join(projectDir(), "phasor_hmm");
   for (const name of ["search.py", "refit.py", "analysis.py"]) {
@@ -491,9 +535,6 @@ export function start(dataDir, chain, inputs, search) {
   }
 
   const root = projectDir();
-  const outputDir = path.join(resolvedData, "phasor_hmm_results");
-  fs.mkdirSync(outputDir, { recursive: true });
-  const previous = existingStaged(outputDir);
   const reused = Boolean(previous);
   const staged = previous || path.join(root, "data", `phasor_${new Date().toISOString().replace(/[-:T]/g, "").slice(0, 14)}_${randomBytes(3).toString("hex")}`);
   fs.mkdirSync(path.join(staged, "run1"), { recursive: true });
