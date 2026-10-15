@@ -262,6 +262,7 @@ export function shellScript(dataRoot, outputDir, maxParallel, search) {
   const bundle = path.join(results, "final_analysis", "bundle.npz");
   const logDir = path.join(outputDir, "logs");
   const copiedBundle = path.join(outputDir, "bundle.npz");
+  const savedResults = path.join(outputDir, "results_run1");
   const status = path.join(outputDir, "phasor_hmm_status.json");
   const grid = normalizeSearch(search);
   const eta = grid.eta.map(formatSearchNumber).join(" ");
@@ -278,9 +279,20 @@ export OMP_NUM_THREADS=1
 export MKL_NUM_THREADS=1
 export OPENBLAS_NUM_THREADS=1
 export NUMEXPR_NUM_THREADS=1
-mkdir -p "${logDir}" "${results}" "${outputDir}"
+mkdir -p "${logDir}" "${results}" "${outputDir}" "${savedResults}"
+publish_results() {
+  if [ -d "${results}" ]; then
+    mkdir -p "${savedResults}"
+    cp -a "${results}/." "${savedResults}/"
+    echo "Saved HMM results in ${savedResults}"
+  fi
+  if [ -s "${bundle}" ]; then
+    cp -f "${bundle}" "${copiedBundle}"
+  fi
+}
 on_error() {
   code=$?
+  publish_results || true
   echo "HMM stopped at exit code $code"
   printf '{"status":"failed","step":"pipeline","exit_code":%s,"updated":"%s"}\\n' "$code" "$(date -Iseconds)" > "${status}"
   exit "$code"
@@ -335,10 +347,12 @@ for eta in ${eta}; do
   done
 done
 if [ "$fail" != "0" ]; then
+  publish_results || true
   echo "Search did not finish. Refit was not started."
   printf '{"status":"failed","step":"search","message":"search failed","updated":"%s"}\\n' "$(date -Iseconds)" > "${status}"
   exit 1
 fi
+publish_results
 
 model_ready=0
 newest=""
@@ -361,10 +375,12 @@ fi
 if [ "$model_ready" = "1" ]; then
   echo "Refit already finished: $(basename "$newest")"
   echo "Continuing with analysis."
+  publish_results
 else
   printf '{"status":"running","step":"refit","updated":"%s"}\\n' "$(date -Iseconds)" > "${status}"
   echo "---- refit ----"
   "${python}" -u "${refit}" 2>&1 | tee -a "${logDir}/refit.log"
+  publish_results
 fi
 
 printf '{"status":"running","step":"analysis","updated":"%s"}\\n' "$(date -Iseconds)" > "${status}"
@@ -376,8 +392,9 @@ if [ ! -s "${bundle}" ]; then
   printf '{"status":"failed","step":"analysis","message":"bundle.npz was not created","updated":"%s"}\\n' "$(date -Iseconds)" > "${status}"
   exit 1
 fi
-cp -f "${bundle}" "${copiedBundle}"
+publish_results
 echo "bundle.npz is ready: ${copiedBundle}"
+echo "Search tables, refit model, and figures are in ${savedResults}"
 printf '{"status":"complete","step":"done","bundle":"${copiedBundle}","updated":"%s"}\\n' "$(date -Iseconds)" > "${status}"
 `;
 }
