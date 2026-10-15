@@ -1,5 +1,6 @@
 """Decode the fitted model for the recording staged in PHASOR_HMM_DATA."""
 import os
+import sys
 from pathlib import Path
 
 import matplotlib
@@ -8,6 +9,11 @@ matplotlib.use("Agg")
 
 def main():
     project_root = Path(__file__).resolve().parents[1]
+    script_dir = str(Path(__file__).resolve().parent)
+    # This file is named analysis.py. If its folder stays at the front of
+    # sys.path, "import analysis" loads this file instead of mode_project/analysis.
+    sys.path[:] = [entry for entry in sys.path if os.path.abspath(entry or ".") != script_dir]
+    sys.path.insert(0, str(project_root))
     data_root = Path(os.environ["PHASOR_HMM_DATA"])
     run_dir = data_root / "run1"
     results = data_root / "results_run1"
@@ -47,8 +53,8 @@ def main():
             raise RuntimeError("The analysis script no longer matches the expected settings block.")
         code = code.replace(old, new, 1)
 
-    ns = {"__name__": "__main__", "__file__": str(Path(__file__).resolve())}
-    exec(compile(code, str(Path(__file__).resolve()), "exec"), ns, ns)
+    ns = {"__name__": "__main__", "__file__": str(src), "__package__": None}
+    exec(compile(code, str(src), "exec"), ns, ns)
 
 
 if __name__ == "__main__":

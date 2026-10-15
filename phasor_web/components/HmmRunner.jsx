@@ -348,8 +348,13 @@ export default function HmmRunner() {
       return;
     }
     const used = r.search || search;
+    const resumeNote = {
+      analysis: "Search and refit are already saved. Analysis continues from those results.",
+      refit: "Search results are already saved. Refit continues from those results.",
+      search: "HMM started on the selected recording.",
+    }[r.resume] || "HMM started on the selected recording.";
     setLines([
-      "HMM started on the selected recording.",
+      resumeNote,
       "It uses " + (r.cores || 3) + " cores.",
       "K " + used.k.join(", "),
       "alpha " + used.alpha.map(formatSearchNumber).join(", "),

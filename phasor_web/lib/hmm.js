@@ -340,9 +340,32 @@ if [ "$fail" != "0" ]; then
   exit 1
 fi
 
-printf '{"status":"running","step":"refit","updated":"%s"}\\n' "$(date -Iseconds)" > "${status}"
-echo "---- refit ----"
-"${python}" -u "${refit}" 2>&1 | tee -a "${logDir}/refit.log"
+model_ready=0
+newest=""
+for candidate in "${results}"/chowliu_K*.npz; do
+  if [ -s "$candidate" ]; then
+    newest="$candidate"
+  fi
+done
+if [ -n "$newest" ]; then
+  model_ready=1
+  for eta in ${eta}; do
+    for alpha in ${alpha}; do
+      csv="${results}/chow_eta\${eta}_alpha\${alpha}.csv"
+      if [ -s "$csv" ] && [ "$csv" -nt "$newest" ]; then
+        model_ready=0
+      fi
+    done
+  done
+fi
+if [ "$model_ready" = "1" ]; then
+  echo "Refit already finished: $(basename "$newest")"
+  echo "Continuing with analysis."
+else
+  printf '{"status":"running","step":"refit","updated":"%s"}\\n' "$(date -Iseconds)" > "${status}"
+  echo "---- refit ----"
+  "${python}" -u "${refit}" 2>&1 | tee -a "${logDir}/refit.log"
+fi
 
 printf '{"status":"running","step":"analysis","updated":"%s"}\\n' "$(date -Iseconds)" > "${status}"
 echo "---- analysis ----"
@@ -357,6 +380,62 @@ cp -f "${bundle}" "${copiedBundle}"
 echo "bundle.npz is ready: ${copiedBundle}"
 printf '{"status":"complete","step":"done","bundle":"${copiedBundle}","updated":"%s"}\\n' "$(date -Iseconds)" > "${status}"
 `;
+}
+
+function existingStaged(outputDir) {
+  const candidates = [];
+  const marker = path.join(outputDir, "staged_path.txt");
+  if (fs.existsSync(marker)) candidates.push(fs.readFileSync(marker, "utf8").trim());
+  const script = path.join(outputDir, "run_pipeline.sh");
+  if (fs.existsSync(script)) {
+    const text = fs.readFileSync(script, "utf8");
+    const match = text.match(/PHASOR_HMM_DATA="([^"]+)"/);
+    if (match) candidates.push(match[1]);
+  }
+  for (const dir of candidates) {
+    if (dir && fs.existsSync(path.join(dir, "run1", "spikes.txt"))) return dir;
+  }
+  return "";
+}
+
+function resumeStep(staged, grid) {
+  const results = path.join(staged, "results_run1");
+  const missingSearch = grid.eta.some((eta) =>
+    grid.alpha.some((alpha) => {
+      const csv = path.join(results, `chow_eta${formatSearchNumber(eta)}_alpha${formatSearchNumber(alpha)}.csv`);
+      try {
+        return !fs.existsSync(csv) || fs.statSync(csv).size === 0;
+      } catch {
+        return true;
+      }
+    })
+  );
+  if (missingSearch) return "search";
+  let newest = "";
+  let newestTime = 0;
+  if (fs.existsSync(results)) {
+    for (const name of fs.readdirSync(results)) {
+      if (!/^chowliu_K.*\.npz$/.test(name)) continue;
+      const full = path.join(results, name);
+      const stat = fs.statSync(full);
+      if (stat.isFile() && stat.size > 0 && stat.mtimeMs >= newestTime) {
+        newest = full;
+        newestTime = stat.mtimeMs;
+      }
+    }
+  }
+  if (!newest) return "refit";
+  const searchNewer = grid.eta.some((eta) =>
+    grid.alpha.some((alpha) => {
+      const csv = path.join(results, `chow_eta${formatSearchNumber(eta)}_alpha${formatSearchNumber(alpha)}.csv`);
+      try {
+        return fs.statSync(csv).mtimeMs > newestTime;
+      } catch {
+        return true;
+      }
+    })
+  );
+  return searchNewer ? "refit" : "analysis";
 }
 
 export function start(dataDir, chain, inputs, search) {
@@ -394,15 +473,19 @@ export function start(dataDir, chain, inputs, search) {
   }
 
   const root = projectDir();
-  const runId = new Date().toISOString().replace(/[-:T]/g, "").slice(0, 14) + "_" + randomBytes(3).toString("hex");
-  const staged = path.join(root, "data", `phasor_${runId}`);
   const outputDir = path.join(resolvedData, "phasor_hmm_results");
-  fs.mkdirSync(path.join(staged, "run1"), { recursive: true });
   fs.mkdirSync(outputDir, { recursive: true });
-
-  copyInput(selected.spikes, path.join(staged, "run1", "spikes.txt"));
-  copyInput(selected.synctones, path.join(staged, "run1", "synctones.csv"));
-  copyInput(selected.stimulus, path.join(staged, "FFsine_2Hz_stims.json"));
+  const previous = existingStaged(outputDir);
+  const reused = Boolean(previous);
+  const staged = previous || path.join(root, "data", `phasor_${new Date().toISOString().replace(/[-:T]/g, "").slice(0, 14)}_${randomBytes(3).toString("hex")}`);
+  fs.mkdirSync(path.join(staged, "run1"), { recursive: true });
+  fs.writeFileSync(path.join(outputDir, "staged_path.txt"), staged + "\n");
+  if (!reused) {
+    copyInput(selected.spikes, path.join(staged, "run1", "spikes.txt"));
+    copyInput(selected.synctones, path.join(staged, "run1", "synctones.csv"));
+    copyInput(selected.stimulus, path.join(staged, "FFsine_2Hz_stims.json"));
+  }
+  const resume = reused ? resumeStep(staged, grid) : "search";
 
   const cfg = loadConfig();
   const maxParallel = Math.max(1, parseInt(cfg.max_parallel_searches || 3, 10));
@@ -413,7 +496,7 @@ export function start(dataDir, chain, inputs, search) {
   const logPath = path.join(outputDir, "phasor_hmm.log");
   fs.writeFileSync(
     logPath,
-    `HMM run\nstarted: ${new Date().toISOString()}\nrecording: ${resolvedData}\nspikes: ${selected.spikes}\nsynctones: ${selected.synctones}\nstimulus: ${selected.stimulus}\nK: ${grid.k.join(" ")}\neta: ${grid.eta.map(formatSearchNumber).join(" ")}\nalpha: ${grid.alpha.map(formatSearchNumber).join(" ")}\n\n`
+    `HMM run\nstarted: ${new Date().toISOString()}\nrecording: ${resolvedData}\ncontinue: ${resume}\nstaged: ${staged}\nspikes: ${selected.spikes}\nsynctones: ${selected.synctones}\nstimulus: ${selected.stimulus}\nK: ${grid.k.join(" ")}\neta: ${grid.eta.map(formatSearchNumber).join(" ")}\nalpha: ${grid.alpha.map(formatSearchNumber).join(" ")}\n\n`
   );
   const logFd = fs.openSync(logPath, "a");
   const child = spawn("/bin/bash", [runScript], {
@@ -448,6 +531,7 @@ export function start(dataDir, chain, inputs, search) {
     cores: maxParallel,
     local: true,
     search: grid,
+    resume,
     inputs: selected,
     started_at: new Date().toISOString(),
   };
