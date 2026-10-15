@@ -492,7 +492,23 @@ def main():
     plt.close(fig7)
 
     print("Running fingerprint analysis...")
-    fp = extract_fingerprint(model, X_train, modes=modes_train, bin_size_s=BIN_SIZE_S)
+    n_reps_train = int(N_TRAIN_REP)
+    n_reps_test = int(N_REP_TOTAL - N_TRAIN_REP)
+    if len(modes_train) % n_reps_train != 0:
+        raise ValueError(f"Training modes length {len(modes_train)} is not divisible by {n_reps_train} repetitions")
+    rep_len = len(modes_train) // n_reps_train
+    if len(modes_test) != n_reps_test * rep_len:
+        raise ValueError(
+            f"Test modes length {len(modes_test)} does not match {n_reps_test} repetitions of {rep_len} bins"
+        )
+    fp = extract_fingerprint(
+        model,
+        X_train,
+        modes=modes_train,
+        bin_size_s=BIN_SIZE_S,
+        n_reps=n_reps_train,
+        rep_len=rep_len,
+    )
 
     print("Sticky states (Aii top 5):")
     print(np.argsort(fp["Aii"])[-5:])
@@ -524,8 +540,8 @@ def main():
     z_vit_train = np.asarray(modes_train)
     z_vit_test = np.asarray(modes_test)
 
-    z_reps_train = z_vit_train.reshape(10, 3000)
-    z_reps_test = z_vit_test.reshape(5, 3000)
+    z_reps_train = z_vit_train.reshape(n_reps_train, rep_len)
+    z_reps_test = z_vit_test.reshape(n_reps_test, rep_len)
     z_reps = np.concatenate((z_reps_train, z_reps_test), axis=0)
 
     plot_viterbi_bands_reps(
