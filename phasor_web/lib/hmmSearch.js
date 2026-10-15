@@ -1,5 +1,4 @@
 export const HMM_K_CHOICES = [3, 6, 9, 12, 15];
-export const HMM_ALPHA_CHOICES = [0.1, 0.5, 1];
 export const HMM_ETA_CHOICES = [0.0005, 0.002, 0.005, 0.03, 0.1];
 
 export const DEFAULT_HMM_SEARCH = {
@@ -9,8 +8,7 @@ export const DEFAULT_HMM_SEARCH = {
 };
 
 const RULES = {
-  k: { label: "K", integer: true, min: 2, max: 30, maxCount: 8 },
-  alpha: { label: "alpha", integer: false, min: 0, max: 5, maxCount: 8 },
+  k: { label: "K", integer: true, min: 2 },
   eta: { label: "eta", integer: false, min: 0, max: 1, maxCount: 8 },
 };
 
@@ -34,7 +32,7 @@ function cleanList(value, kind) {
     if (rule.integer && !Number.isInteger(n)) throw new Error(`${rule.label} must be a whole number`);
     if (n <= rule.min && rule.min === 0) throw new Error(`${rule.label} must be greater than 0`);
     if (n < rule.min) throw new Error(`${rule.label} must be at least ${rule.min}`);
-    if (n > rule.max) throw new Error(`${rule.label} must be at most ${rule.max}`);
+    if (rule.max != null && n > rule.max) throw new Error(`${rule.label} must be at most ${rule.max}`);
     const text = formatSearchNumber(rule.integer ? n : n);
     if (!/^\d+(\.\d+)?$/.test(text) || text === "0") throw new Error(`${rule.label} is not a usable value`);
     if (seen.has(text)) continue;
@@ -42,7 +40,7 @@ function cleanList(value, kind) {
     out.push(rule.integer ? n : Number(text));
   }
   if (!out.length) throw new Error(`Choose at least one ${rule.label}`);
-  if (out.length > rule.maxCount) throw new Error(`Choose at most ${rule.maxCount} values of ${rule.label}`);
+  if (rule.maxCount != null && out.length > rule.maxCount) throw new Error(`Choose at most ${rule.maxCount} values of ${rule.label}`);
   out.sort((a, b) => a - b);
   return out;
 }
@@ -59,7 +57,7 @@ export function normalizeSearch(input) {
   }
   return {
     k: cleanList(source.k ?? source.K ?? DEFAULT_HMM_SEARCH.k, "k"),
-    alpha: cleanList(source.alpha ?? DEFAULT_HMM_SEARCH.alpha, "alpha"),
+    alpha: [...DEFAULT_HMM_SEARCH.alpha],
     eta: cleanList(source.eta ?? DEFAULT_HMM_SEARCH.eta, "eta"),
   };
 }

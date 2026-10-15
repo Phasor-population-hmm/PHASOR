@@ -9,7 +9,7 @@ import StateGraph from "./visuals/StateGraph";
 import RecordingSelect, { outputLabel, prepareRecording, readOtherInputs, readOutputRoot, readRecordingManual, rememberOtherInputs, rememberRecordingFolder, useRecordingCatalog, writeOtherInputs } from "./RecordingPicker";
 import { chooseOutputFolder, runLayout } from "@/lib/layout";
 import { ensureFree } from "./JobDock";
-import { DEFAULT_HMM_SEARCH, HMM_ALPHA_CHOICES, HMM_ETA_CHOICES, HMM_K_CHOICES, formatSearchNumber, normalizeSearch } from "@/lib/hmmSearch";
+import { DEFAULT_HMM_SEARCH, HMM_ETA_CHOICES, HMM_K_CHOICES, formatSearchNumber, normalizeSearch } from "@/lib/hmmSearch";
 
 const SEARCH_MEMORY = "phasor-hmm-search";
 
@@ -24,7 +24,7 @@ function loadSearch() {
 
 function SearchSettings({ value, onChange }) {
   const [open, setOpen] = useState(false);
-  const [draft, setDraft] = useState({ k: "", alpha: "", eta: "" });
+  const [draft, setDraft] = useState({ k: "", eta: "" });
   const [note, setNote] = useState("");
 
   function toggle(kind, item) {
@@ -56,8 +56,7 @@ function SearchSettings({ value, onChange }) {
   }
 
   const groups = [
-    { kind: "k", label: "K", choices: HMM_K_CHOICES, hint: "Number of hidden states. Whole numbers from 2 to 30." },
-    { kind: "alpha", label: "alpha", choices: HMM_ALPHA_CHOICES, hint: "Greater than 0 and at most 5." },
+    { kind: "k", label: "K", choices: HMM_K_CHOICES, hint: "Number of hidden states. Any whole number of 2 or more." },
     { kind: "eta", label: "eta", choices: HMM_ETA_CHOICES, hint: "Covariance soft-threshold. Greater than 0 and at most 1." },
   ];
 
@@ -67,7 +66,7 @@ function SearchSettings({ value, onChange }) {
         <span>
           <span className="block text-sm text-neutral-200">Search settings</span>
           <span className="mt-1 block font-mono text-[12px] text-neutral-500">
-            K {value.k.join(", ")}   alpha {value.alpha.map(formatSearchNumber).join(", ")}   eta {value.eta.map(formatSearchNumber).join(", ")}
+            K {value.k.join(", ")}   alpha 0.5   eta {value.eta.map(formatSearchNumber).join(", ")}
           </span>
         </span>
         <span className="text-sm text-neutral-400">{open ? "Hide" : "Change"}</span>
@@ -75,7 +74,7 @@ function SearchSettings({ value, onChange }) {
       {open && (
         <div className="border-t border-neutral-800 px-4 py-4">
           <p className="text-sm leading-relaxed text-neutral-400">
-            Highlighted values are used for the next fit. The standard search is K 3, 6, 9, 12, and 15, alpha 0.5, and eta 0.0005, 0.002, and 0.005. Each eta and alpha pair is searched, and every selected K is tried inside that search. Refit keeps the combination the search prefers.
+            Highlighted values are used for the next fit. Alpha stays at 0.5. The standard search is K 3, 6, 9, 12, and 15, and eta 0.0005, 0.002, and 0.005. Each selected eta is searched at alpha 0.5, and every selected K is tried inside that search. Refit keeps the combination the search prefers.
           </p>
           {groups.map((group) => {
             const extras = value[group.kind].filter((item) => !group.choices.includes(item));
@@ -115,7 +114,7 @@ function SearchSettings({ value, onChange }) {
           })}
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm text-neutral-400">
-              {value.eta.length * value.alpha.length} searches, with {value.k.length} values of K in each. Up to 3 searches run at the same time.
+              {value.eta.length} searches at alpha 0.5, with {value.k.length} values of K in each. Up to 3 searches run at the same time.
             </p>
             <button
               type="button"
@@ -371,8 +370,8 @@ export default function HmmRunner() {
           <h1 className="text-3xl font-semibold tracking-tight text-neutral-50">Hidden Markov Model</h1>
           <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-neutral-400">
             Fits a population hidden Markov model to the selected spike file, synctone times, and stimulus file.
-            The default search uses K of 3, 6, 9, 12, and 15, alpha 0.5, and eta 0.0005, 0.002, and 0.005.
-            Search settings can use other values. The fit then refits the preferred model and decodes the latent state.
+            Alpha stays at 0.5. The default search uses K of 3, 6, 9, 12, and 15, and eta 0.0005, 0.002, and 0.005.
+            Search settings can use other K and eta values. The fit then refits the preferred model and decodes the latent state.
             An existing bundle.npz is reused.
           </p>
         </div>
@@ -442,7 +441,7 @@ export default function HmmRunner() {
                 </div>
               </div>
               <p className="mt-4 text-[13px] text-neutral-500">
-                The selected eta and alpha pairs run together, up to 3 at a time, then the preferred model is refit and decoded.
+                The selected eta values run at alpha 0.5, up to 3 at a time, then the preferred model is refit and decoded.
               </p>
             </>
           )}
