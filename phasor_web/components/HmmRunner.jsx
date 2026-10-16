@@ -9,7 +9,7 @@ import StateGraph from "./visuals/StateGraph";
 import RecordingSelect, { outputLabel, prepareRecording, readOtherInputs, readOutputRoot, readRecordingManual, rememberOtherInputs, rememberRecordingFolder, useRecordingCatalog, writeOtherInputs } from "./RecordingPicker";
 import { chooseOutputFolder, runLayout } from "@/lib/layout";
 import { ensureFree } from "./JobDock";
-import { DEFAULT_HMM_SEARCH, HMM_ETA_CHOICES, HMM_K_CHOICES, formatSearchNumber, normalizeSearch } from "@/lib/hmmSearch";
+import { DEFAULT_HMM_SEARCH, HMM_ETA_CHOICES, HMM_K_CHOICES, formatSearchNumber, normalizeSearch, resultsFolderName } from "@/lib/hmmSearch";
 
 const SEARCH_MEMORY = "phasor-hmm-search";
 
@@ -342,7 +342,7 @@ export default function HmmRunner() {
       return;
     }
     if (r.already) {
-      setLines(["Search, refit, and analysis are already saved.", "  " + (r.saved || dataDir + "/results_run1")]);
+      setLines(["These K and eta values are already saved.", "  " + (r.saved || dataDir + "/" + resultsFolderName(search)), "A different K or eta runs again in its own subfolder."]);
       setStatus("done");
       setStep("done");
       return;
@@ -365,7 +365,7 @@ export default function HmmRunner() {
       "K " + used.k.join(", "),
       "alpha " + used.alpha.map(formatSearchNumber).join(", "),
       "eta " + used.eta.map(formatSearchNumber).join(", "),
-      "  results   " + dataDir + "/results_run1",
+      "  results   " + (r.saved || dataDir + "/" + (r.folder || resultsFolderName(search))),
     ]);
     setStatus("running");
     setStep("search");
@@ -383,8 +383,7 @@ export default function HmmRunner() {
             Fits a population hidden Markov model to the selected spike file, synctone times, and stimulus file.
             Alpha stays at 0.5. The default search uses K of 3, 6, 9, 12, and 15, and eta 0.0005, 0.002, and 0.005.
             Search settings can use other K and eta values. The fit then refits the preferred model and decodes the latent state.
-            Search tables, the refit model, and the figures are saved in 05_hmm/results_run1.
-            An existing bundle.npz is reused.
+            The default fit is saved in 05_hmm/results_run1. A different K or eta runs again and is saved in its own subfolder of 05_hmm. Earlier results stay where they are.
           </p>
         </div>
         <StateGraph className="hidden h-[150px] w-full text-neutral-600 lg:block" />

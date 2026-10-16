@@ -58,7 +58,13 @@ export function ackSession() {
 
 function hmmStatus(dataDir) {
   if (!dataDir) return {};
-  const statusPath = path.join(dataDir, "phasor_hmm_results", "phasor_hmm_status.json");
+  let statusPath = path.join(dataDir, "phasor_hmm_results", "phasor_hmm_status.json");
+  try {
+    const active = JSON.parse(fs.readFileSync(path.join(dataDir, "phasor_hmm_results", "active_run.json"), "utf8"));
+    if (active.job) statusPath = path.join(active.job, "phasor_hmm_status.json");
+  } catch {
+    /* the default results folder keeps its status beside the log */
+  }
   try {
     return JSON.parse(fs.readFileSync(statusPath, "utf8"));
   } catch {

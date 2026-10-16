@@ -45,6 +45,19 @@ function cleanList(value, kind) {
   return out;
 }
 
+export function resultsFolderName(input) {
+  const grid = normalizeSearch(input);
+  const same = (left, right) => left.length === right.length && left.every((value, index) => value === right[index]);
+  if (same(grid.k, DEFAULT_HMM_SEARCH.k) && same(grid.eta, DEFAULT_HMM_SEARCH.eta) && same(grid.alpha, DEFAULT_HMM_SEARCH.alpha)) {
+    return "results_run1";
+  }
+  const name = `results_K${grid.k.join("_")}_eta${grid.eta.map(formatSearchNumber).join("_")}_alpha${grid.alpha.map(formatSearchNumber).join("_")}`;
+  if (name.length <= 180) return name;
+  let hash = 0;
+  for (const ch of name) hash = (hash * 33 + ch.charCodeAt(0)) >>> 0;
+  return `results_${hash.toString(16)}`;
+}
+
 export function normalizeSearch(input) {
   const source = input || {};
   const missing = source.k == null && source.K == null && source.alpha == null && source.eta == null;

@@ -7,7 +7,7 @@ import { pipelinePython } from "./pythonPath";
 import { displayPath } from "./paths";
 import { claim, finish, readSession, runningSession } from "./session";
 import { ensureLayout } from "./overwrite";
-import { formatSearchNumber, normalizeSearch } from "./hmmSearch";
+import { formatSearchNumber, normalizeSearch, resultsFolderName } from "./hmmSearch";
 
 export function loadConfig() {
   if (fs.existsSync(HMM_CONFIG_PATH)) {
@@ -252,7 +252,7 @@ function profileById(profileId) {
   return info.profiles.find((p) => p.id === profileId || p.directory === profileId) || null;
 }
 
-export function shellScript(dataRoot, outputDir, maxParallel, search) {
+export function shellScript(dataRoot, outputDir, maxParallel, search, hmmFolder, folderName) {
   const python = pythonExecutable();
   const hmmDir = path.join(projectDir(), "phasor_hmm");
   const models = path.join(hmmDir, "search.py");
@@ -261,9 +261,8 @@ export function shellScript(dataRoot, outputDir, maxParallel, search) {
   const results = path.join(dataRoot, "results_run1");
   const bundle = path.join(results, "final_analysis", "bundle.npz");
   const logDir = path.join(outputDir, "logs");
-  const hmmFolder = path.dirname(outputDir);
-  const copiedBundle = path.join(hmmFolder, "bundle.npz");
-  const savedResults = path.join(hmmFolder, "results_run1");
+  const savedResults = path.join(hmmFolder, folderName);
+  const copiedBundle = path.join(savedResults, "final_analysis", "bundle.npz");
   const status = path.join(outputDir, "phasor_hmm_status.json");
   const grid = normalizeSearch(search);
   const eta = grid.eta.map(formatSearchNumber).join(" ");
@@ -287,10 +286,6 @@ publish_results() {
     cp -a "${results}/." "${savedResults}/"
     echo "Saved HMM results in ${savedResults}"
   fi
-  if [ -s "${bundle}" ]; then
-    cp -f "${bundle}" "${copiedBundle}"
-    cp -f "${bundle}" "${outputDir}/bundle.npz"
-  fi
 }
 on_error() {
   code=$?
@@ -305,13 +300,26 @@ echo "Search, refit, then Viterbi decode."
 echo "K: ${kText}"
 echo "η: ${eta}"
 echo "α: ${alpha}"
+echo "Results folder: ${savedResults}"
+
+covers_k() {
+  local csv="$1"
+  local k
+  [ -s "$csv" ] || return 1
+  for k in ${kText}; do
+    if ! awk -F, -v want="$k" 'NR>1 && $1==want { found=1 } END { exit !found }' "$csv"; then
+      return 1
+    fi
+  done
+  return 0
+}
 
 search_pids=()
 for eta in ${eta}; do
   for alpha in ${alpha}; do
     csv="${results}/chow_eta\${eta}_alpha\${alpha}.csv"
-    if [ -s "$csv" ]; then
-      echo "Search eta=\${eta} alpha=\${alpha} already finished."
+    if covers_k "$csv"; then
+      echo "Search eta=\${eta} alpha=\${alpha} already finished for this K list."
       continue
     fi
     (
@@ -337,7 +345,7 @@ for eta in ${eta}; do
   for alpha in ${alpha}; do
     mark="${logDir}/search_eta\${eta}_alpha\${alpha}.exit"
     csv="${results}/chow_eta\${eta}_alpha\${alpha}.csv"
-    if [ -s "$csv" ]; then
+    if covers_k "$csv"; then
       continue
     fi
     code=1
@@ -402,7 +410,21 @@ printf '{"status":"complete","step":"done","bundle":"${copiedBundle}","updated":
 `;
 }
 
-function existingStaged(outputDir) {
+function sameGrid(left, right) {
+  return JSON.stringify(normalizeSearch(left)) === JSON.stringify(normalizeSearch(right));
+}
+
+function gridMatches(dir, grid) {
+  const marker = path.join(dir, "search.json");
+  if (!fs.existsSync(marker)) return resultsFolderName(grid) === "results_run1";
+  try {
+    return sameGrid(JSON.parse(fs.readFileSync(marker, "utf8")), grid);
+  } catch {
+    return false;
+  }
+}
+
+function existingStaged(outputDir, grid) {
   const candidates = [];
   const marker = path.join(outputDir, "staged_path.txt");
   if (fs.existsSync(marker)) candidates.push(fs.readFileSync(marker, "utf8").trim());
@@ -413,9 +435,19 @@ function existingStaged(outputDir) {
     if (match) candidates.push(match[1]);
   }
   for (const dir of candidates) {
-    if (dir && fs.existsSync(path.join(dir, "run1", "spikes.txt"))) return dir;
+    if (dir && fs.existsSync(path.join(dir, "run1", "spikes.txt")) && gridMatches(dir, grid)) return dir;
   }
   return "";
+}
+
+function csvCoversK(csv, grid) {
+  try {
+    const lines = fs.readFileSync(csv, "utf8").trim().split(/\n/).slice(1);
+    const have = new Set(lines.filter(Boolean).map((line) => Number(line.split(",")[0])));
+    return grid.k.every((k) => have.has(Number(k)));
+  } catch {
+    return false;
+  }
 }
 
 function resumeStep(staged, grid) {
@@ -423,11 +455,7 @@ function resumeStep(staged, grid) {
   const missingSearch = grid.eta.some((eta) =>
     grid.alpha.some((alpha) => {
       const csv = path.join(results, `chow_eta${formatSearchNumber(eta)}_alpha${formatSearchNumber(alpha)}.csv`);
-      try {
-        return !fs.existsSync(csv) || fs.statSync(csv).size === 0;
-      } catch {
-        return true;
-      }
+      return !csvCoversK(csv, grid);
     })
   );
   if (missingSearch) return "search";
@@ -466,19 +494,38 @@ function analysisFinished(resultsDir) {
   }
 }
 
-export function publishHmmResults(staged, hmmDir) {
+function jobDirFor(hmmDir, folderName) {
+  const base = path.join(hmmDir, "phasor_hmm_results");
+  if (folderName === "results_run1") return base;
+  return path.join(base, folderName);
+}
+
+function writeActiveRun(hmmRoot, jobDir, saved) {
+  const base = path.join(hmmRoot, "phasor_hmm_results");
+  fs.mkdirSync(base, { recursive: true });
+  const payload = {
+    job: jobDir,
+    saved,
+    bundle: path.join(saved, "final_analysis", "bundle.npz"),
+  };
+  fs.writeFileSync(path.join(base, "active_run.json"), JSON.stringify(payload, null, 2));
+  return payload;
+}
+
+function readActiveRun(hmmRoot) {
+  try {
+    return JSON.parse(fs.readFileSync(path.join(hmmRoot, "phasor_hmm_results", "active_run.json"), "utf8"));
+  } catch {
+    return null;
+  }
+}
+
+export function publishHmmResults(staged, hmmDir, folderName = "results_run1") {
   const src = path.join(staged, "results_run1");
-  const dest = path.join(hmmDir, "results_run1");
-  if (!staged || !fs.existsSync(src) || path.resolve(src) === path.resolve(dest)) return "";
+  const dest = path.join(hmmDir, folderName);
+  if (!staged || !fs.existsSync(src) || path.resolve(src) === path.resolve(dest)) return dest;
   fs.mkdirSync(dest, { recursive: true });
   fs.cpSync(src, dest, { recursive: true, force: true });
-  const bundle = path.join(dest, "final_analysis", "bundle.npz");
-  if (fs.existsSync(bundle) && fs.statSync(bundle).size > 0) {
-    fs.copyFileSync(bundle, path.join(hmmDir, "bundle.npz"));
-    const nested = path.join(hmmDir, "phasor_hmm_results");
-    fs.mkdirSync(nested, { recursive: true });
-    fs.copyFileSync(bundle, path.join(nested, "bundle.npz"));
-  }
   return dest;
 }
 
@@ -494,26 +541,22 @@ export function start(dataDir, chain, inputs, search) {
   const resolvedData = path.resolve(dataDir);
   if (!fs.existsSync(resolvedData)) return { error: `Dataset folder not found: ${resolvedData}` };
 
-  const outputDir = path.join(resolvedData, "phasor_hmm_results");
+  const folderName = resultsFolderName(grid);
+  const outputDir = jobDirFor(resolvedData, folderName);
   fs.mkdirSync(outputDir, { recursive: true });
-  const previous = existingStaged(outputDir);
-  if (previous) publishHmmResults(previous, resolvedData);
-  const savedResults = path.join(resolvedData, "results_run1");
-  const nestedResults = path.join(outputDir, "results_run1");
-  if (!analysisFinished(savedResults) && analysisFinished(nestedResults)) {
-    fs.cpSync(nestedResults, savedResults, { recursive: true, force: true });
-  }
+  const previous = existingStaged(outputDir, grid);
+  const savedResults = path.join(resolvedData, folderName);
+  if (previous) publishHmmResults(previous, resolvedData, folderName);
   if (analysisFinished(savedResults) || (previous && analysisFinished(path.join(previous, "results_run1")))) {
-    if (!analysisFinished(savedResults) && previous) publishHmmResults(previous, resolvedData);
+    if (!analysisFinished(savedResults) && previous) publishHmmResults(previous, resolvedData, folderName);
     return {
       already: true,
       saved: savedResults,
+      folder: folderName,
+      search: grid,
       bundle: path.join(savedResults, "final_analysis", "bundle.npz"),
     };
   }
-
-  const bundle = findBundle(resolvedData);
-  if (bundle && !previous) return { skipped: true, bundle };
 
   const hmmDir = path.join(projectDir(), "phasor_hmm");
   for (const name of ["search.py", "refit.py", "analysis.py"]) {
@@ -539,6 +582,8 @@ export function start(dataDir, chain, inputs, search) {
   const staged = previous || path.join(root, "data", `phasor_${new Date().toISOString().replace(/[-:T]/g, "").slice(0, 14)}_${randomBytes(3).toString("hex")}`);
   fs.mkdirSync(path.join(staged, "run1"), { recursive: true });
   fs.writeFileSync(path.join(outputDir, "staged_path.txt"), staged + "\n");
+  fs.writeFileSync(path.join(staged, "search.json"), JSON.stringify(grid, null, 2));
+  writeActiveRun(resolvedData, outputDir, savedResults);
   if (!reused) {
     copyInput(selected.spikes, path.join(staged, "run1", "spikes.txt"));
     copyInput(selected.synctones, path.join(staged, "run1", "synctones.csv"));
@@ -549,7 +594,7 @@ export function start(dataDir, chain, inputs, search) {
   const cfg = loadConfig();
   const maxParallel = Math.max(1, parseInt(cfg.max_parallel_searches || 3, 10));
   const runScript = path.join(outputDir, "run_pipeline.sh");
-  fs.writeFileSync(runScript, shellScript(staged, outputDir, maxParallel, grid));
+  fs.writeFileSync(runScript, shellScript(staged, outputDir, maxParallel, grid, resolvedData, folderName));
   fs.chmodSync(runScript, 0o755);
 
   const logPath = path.join(outputDir, "phasor_hmm.log");
@@ -590,6 +635,8 @@ export function start(dataDir, chain, inputs, search) {
     cores: maxParallel,
     local: true,
     search: grid,
+    folder: folderName,
+    saved: savedResults,
     resume,
     inputs: selected,
     started_at: new Date().toISOString(),
@@ -612,7 +659,8 @@ export function stop(dataDir) {
   }
   const root = dataDir ? path.resolve(dataDir) : session?.data;
   if (root) {
-    const statusPath = path.join(root, "phasor_hmm_results", "phasor_hmm_status.json");
+    const active = readActiveRun(root);
+    const statusPath = path.join(active?.job || path.join(root, "phasor_hmm_results"), "phasor_hmm_status.json");
     try {
       fs.mkdirSync(path.dirname(statusPath), { recursive: true });
       fs.writeFileSync(
@@ -629,7 +677,8 @@ export function stop(dataDir) {
 
 export function tail(dataDir, n = 120) {
   const root = path.resolve(dataDir);
-  const output = path.join(root, "phasor_hmm_results");
+  const active = readActiveRun(root);
+  const output = active?.job && fs.existsSync(active.job) ? active.job : path.join(root, "phasor_hmm_results");
   const logPath = path.join(output, "phasor_hmm.log");
   const statusPath = path.join(output, "phasor_hmm_status.json");
   let status = {};
@@ -642,6 +691,7 @@ export function tail(dataDir, n = 120) {
   }
   const exists = fs.existsSync(logPath);
   const lines = exists ? fs.readFileSync(logPath, "utf8").split("\n").slice(-n) : [];
-  const bundle = findBundle(root);
-  return { lines, exists, bundle: bundle || "", status };
+  const ownBundle = active?.bundle || "";
+  const bundle = status.status === "complete" && ownBundle && fs.existsSync(ownBundle) ? ownBundle : "";
+  return { lines, exists, bundle, status, saved: active?.saved || "" };
 }
