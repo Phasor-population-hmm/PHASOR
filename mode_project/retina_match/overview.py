@@ -498,7 +498,7 @@ def export_one_pair_results(
     tau,
     global_dmin,
     global_dmax,
-    base_dir="/content/drive/MyDrive/upstate/mode_project/matching_results",
+    base_dir="matching_results",
     top_n_overview=4,
     bin_ms=10,
     max_reps=4,

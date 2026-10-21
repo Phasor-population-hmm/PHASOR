@@ -86,7 +86,7 @@ def flatten_upper_triangle(C: np.ndarray, k: int = 1) -> np.ndarray:
 
 
 # ============================================================
-# Correlation (Prentice Fig.7B uses correlation coefficients)
+# Correlation coefficients
 # ============================================================
 def cov_to_corr(C: np.ndarray, m: np.ndarray, eps: float = 1e-12) -> np.ndarray:
     """

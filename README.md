@@ -106,4 +106,4 @@ export PHASOR_OUTPUT_ROOT=/path/to/output
 
 ## License
 
-A license has not been selected. Until one is chosen, all rights are reserved. See `LICENSE`.
+PHASOR is released under the MIT License. See `LICENSE`.
