@@ -94,15 +94,18 @@ Settings are in `phasor_web/hmm.config.json`.
 
 ## Runtime
 
-Wall-clock time for the default hidden Markov model on one recording. The search used K of 3, 6, 9, 12, and 15, eta 0.0005, 0.002, and 0.005, and alpha 0.5. The three eta values ran at the same time.
-
-Intel Xeon W-2245 (8 cores, 16 threads, 3.90 GHz), 125 GB memory, Ubuntu 20.04
+Linux. Intel Xeon W-2245 (8 cores, 16 threads, 3.90 GHz), 125 GB memory, Ubuntu 20.04.
 
 - HMM search: 1,199 minutes (20.0 hours)
 - HMM refit: 252 minutes (4.2 hours)
 - HMM analysis: 42 minutes
 
-The fit from the start of the search through the last analysis figure took 1,493 minutes (24.9 hours). The refit kept K 12, eta 0.005, and alpha 0.5.
+macOS. 14 inch MacBook Pro, M3 Pro, 11 CPU cores, 18 GB memory, macOS Tahoe 26.0.
+
+- Preprocessing through Fourier: 2 to 5 minutes
+- HMM search: 894 minutes (15 hours)
+- HMM refit: 75 minutes (1.25 hours)
+- HMM analysis and post-HMM analysis: 2 to 5 minutes
 
 ## Post-HMM plots
 
