@@ -96,9 +96,10 @@ Settings are in `phasor_web/hmm.config.json`.
 
 Linux. Intel Xeon W-2245 (8 cores, 16 threads, 3.90 GHz), 125 GB memory, Ubuntu 20.04.
 
+- Preprocessing through Fourier: 5 to 10 minutes
 - HMM search: 1,199 minutes (20.0 hours)
 - HMM refit: 252 minutes (4.2 hours)
-- HMM analysis: 42 minutes
+- HMM analysis and post-HMM analysis: 10 minutes
 
 macOS. 14 inch MacBook Pro, M3 Pro, 11 CPU cores, 18 GB memory, macOS Tahoe 26.0.
 
